@@ -4,8 +4,18 @@ import 'package:kejian/main.dart';
 import 'package:kejian/data/demo.dart';
 import 'package:kejian/data/repository.dart';
 import 'package:kejian/domain/models.dart';
+import 'package:kejian/platform/widget_bridge.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(WidgetBridge.channel, (_) async => null);
+  });
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(WidgetBridge.channel, null);
+  });
   final now = DateTime(2026, 11, 8, 12);
   Future<void> start(
     WidgetTester tester,

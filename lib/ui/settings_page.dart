@@ -7,6 +7,9 @@ class SettingsPage extends StatelessWidget {
   final ScheduleData data;
   final VoidCallback onSemester, onExport, onImport, onClear;
   final ValueChanged<bool> onWeekends;
+  final bool supportsWidgets;
+  final String? widgetError;
+  final VoidCallback? onWidgetSync;
   const SettingsPage({
     super.key,
     required this.data,
@@ -15,6 +18,9 @@ class SettingsPage extends StatelessWidget {
     required this.onImport,
     required this.onClear,
     required this.onWeekends,
+    this.supportsWidgets = false,
+    this.widgetError,
+    this.onWidgetSync,
   });
   @override
   Widget build(BuildContext context) => Column(
@@ -57,6 +63,39 @@ class SettingsPage extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 20),
+      if (supportsWidgets) ...[
+        Surface(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '桌面小组件',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示下一节课和今日安排，点击小组件可打开 App。',
+                style: TextStyle(color: muted, fontSize: 12, height: 1.8),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widgetError ?? '课表修改后会自动同步；实际刷新时间由系统安排。',
+                style: TextStyle(
+                  color: widgetError == null ? muted : const Color(0xFFA6614A),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: onWidgetSync,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('重新同步小组件'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
       Surface(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +150,7 @@ class SettingsPage extends StatelessWidget {
                 Icon(Icons.code, size: 17, color: green),
                 SizedBox(width: 8),
                 Text(
-                  '开源 · MIT · v0.1.0',
+                  '开源 · MIT · v0.2.0',
                   style: TextStyle(color: green, fontSize: 12),
                 ),
               ],
@@ -121,7 +160,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () => showAboutDialog(
                 context: context,
                 applicationName: '课间 Kejian',
-                applicationVersion: '0.1.0',
+                applicationVersion: '0.2.0',
                 applicationLegalese: '© 2026 Kejian contributors · MIT',
                 children: const [
                   Text('功能设计参考 SleepIn 与 XDYou。源码中记录了参考来源；应用界面和核心规则为独立实现。'),

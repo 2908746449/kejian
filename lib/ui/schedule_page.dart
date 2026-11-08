@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/models.dart';
 import '../domain/engine.dart';
+import '../domain/agenda.dart';
 import 'theme.dart';
 
 class SchedulePage extends StatelessWidget {
@@ -40,7 +41,7 @@ class SchedulePage extends StatelessWidget {
         )
         .toList();
     final compact = MediaQuery.sizeOf(context).width < 650;
-    final next = nextLesson(data, now);
+    final agenda = agendaPreview(data, now);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -85,7 +86,8 @@ class SchedulePage extends StatelessWidget {
               ],
             ),
           ),
-        _nextCard(context, next),
+        _nextCard(context, agenda.next),
+        if (data.courses.isNotEmpty) _followingCards(context, agenda),
         const SizedBox(height: 26),
         Row(
           children: [
@@ -243,7 +245,108 @@ class SchedulePage extends StatelessWidget {
   String _courseFor(LessonException e) => data.courses
       .firstWhere((c) => c.meetings.any((m) => m.id == e.meetingId))
       .name;
-  Widget _nextCard(BuildContext context, Lesson? next) {
+  Widget _followingCards(BuildContext context, AgendaPreview agenda) {
+    final items = agenda.following;
+    final title = agenda.tomorrow ? '明天的安排' : '今天还有 ${items.length} 门课';
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: muted, fontSize: 12)),
+          const SizedBox(height: 9),
+          if (items.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                '明天没有其他课程，留些时间给自己。',
+                style: TextStyle(color: muted, fontSize: 12),
+              ),
+            )
+          else if (items.length == 1)
+            _nextCard(
+              context,
+              items.single,
+              label: agenda.tomorrow ? '明日课程' : '今日后续',
+            )
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final width =
+                    ((constraints.maxWidth - (items.length - 1) * 10) /
+                            items.length)
+                        .clamp(112.0, 220.0);
+                return SizedBox(
+                  height: 128,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: items.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    itemBuilder: (context, i) {
+                      final lesson = items[i];
+                      final start =
+                          data.semester.periods[lesson.startPeriod - 1].start;
+                      final end =
+                          data.semester.periods[lesson.endPeriod - 1].end;
+                      return SizedBox(
+                        width: width,
+                        child: Material(
+                          color: const Color(0xFFE8EDDF),
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => onLesson(lesson),
+                            child: Padding(
+                              padding: const EdgeInsets.all(13),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$start—$end',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: green,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 9),
+                                  Text(
+                                    lesson.course.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    lesson.room.isEmpty ? '教室待补充' : lesson.room,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: green,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _nextCard(BuildContext context, Lesson? next, {String? label}) {
     final active = next != null && !next.start(data.semester).isAfter(now);
     final subtitle = next == null
         ? '这一学期的安排已经完成，给自己放个小假。'
@@ -266,7 +369,7 @@ class SchedulePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        active ? '正在上课' : '下一节课',
+                        label ?? (active ? '正在上课' : '下一节课'),
                         style: const TextStyle(color: green, fontSize: 10),
                       ),
                       const SizedBox(height: 4),
@@ -325,11 +428,12 @@ class SchedulePage extends StatelessWidget {
                         ),
                         const SizedBox(width: 7),
                         Text(
-                          active
-                              ? '正在上课'
-                              : next == null
-                              ? '暂时没有下一节课'
-                              : '下一节课',
+                          label ??
+                              (active
+                                  ? '正在上课'
+                                  : next == null
+                                  ? '暂时没有下一节课'
+                                  : '下一节课'),
                           style: const TextStyle(
                             fontSize: 11,
                             color: green,

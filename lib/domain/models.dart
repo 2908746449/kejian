@@ -324,10 +324,13 @@ class ScheduleData {
 List<int> parseWeeks(String text, int maxWeek) {
   final weeks = <int>{};
   for (final token
-      in text.replaceAll('，', ',').replaceAll(' ', '').split(',')) {
+      in text
+          .trim()
+          .replaceAll(RegExp(r'\s*-\s*'), '-')
+          .split(RegExp(r'[\s,，]+'))) {
     final parts = token.split('-');
     if (parts.length > 2 || parts.any((p) => int.tryParse(p) == null)) {
-      throw const FormatException('周次格式示例：1-8,10,12-16');
+      throw const FormatException('周次用空格或逗号分隔，例如：1 3 5-8');
     }
     final start = int.parse(parts.first), end = int.parse(parts.last);
     if (start < 1 || end < start || end > maxWeek) {

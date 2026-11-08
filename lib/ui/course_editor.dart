@@ -364,7 +364,9 @@ class _CourseEditorState extends State<CourseEditor> {
           controller: m.weeks,
           decoration: const InputDecoration(
             labelText: '上课周次',
-            hintText: '例如：1-8,10,12-16',
+            hintText: '例如：1 3 5 8-12',
+            helperText: '可自定义周次，用空格或逗号分隔，支持 8-12 范围',
+            helperMaxLines: 2,
           ),
         ),
         const SizedBox(height: 6),

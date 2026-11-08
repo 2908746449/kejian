@@ -4,6 +4,9 @@
 lib/
   domain/models.dart       学期、节次、课程、重复安排、单次例外、校验
   domain/engine.dart       日期展开、下一节课、冲突检查
+  domain/agenda.dart       今日剩余课程与明天预览
+  domain/widget_snapshot.dart  完整学期的小组件快照
+  platform/widget_bridge.dart  原生共享数据通道
   data/demo.dart           带明确标记的示例课表
   data/importer.dart       CSV 解析与导入规则
   data/repository.dart     SQLite / Web 存储接口
@@ -44,6 +47,10 @@ Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理
 
 表头固定为 `课程名称,教师,教室,星期,开始节次,结束节次,周次,颜色,备注`。
 
-星期 1—7，颜色 1—6，周次如 `1-16` 或带引号的 `"1,3,5,7"`。同一名称、教师、颜色和备注合并为一门课，其每行形成不同安排。CSV 追加不会猜测并合并已有课程，重复导入会保留为新课程并提示冲突。完整迁移请使用 JSON。
+星期 1—7，颜色 1—6，周次如 `1-16`、`1 3 5 7` 或带引号的 `"1,3,5,7"`。同一名称、教师、颜色和备注合并为一门课，其每行形成不同安排。CSV 追加不会猜测并合并已有课程，重复导入会保留为新课程并提示冲突。完整迁移请使用 JSON。
 
 学校导入器未来只需产出统一课程模型；当前未实现插件或动态脚本执行器。
+
+## 小组件
+
+App 成功保存主文档后，把规则引擎展开的完整学期快照传给原生端。Android SharedPreferences 与 iOS App Group 原子文件作为只读副本；小组件自行按当前本地时间筛选下一节与当天安排。同步失败单独提示，不回滚已保存主文档。刷新、时间线与部署设置见 `MOBILE.md`。

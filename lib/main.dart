@@ -11,6 +11,7 @@ import 'data/importer.dart';
 import 'data/repository.dart';
 import 'domain/models.dart';
 import 'domain/engine.dart';
+import 'platform/widget_bridge.dart';
 import 'ui/theme.dart';
 import 'ui/course_editor.dart';
 import 'ui/courses_page.dart';
@@ -52,6 +53,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   String? loadError;
   int tab = 0, week = 1;
   bool saving = false;
+  String? widgetError;
   Timer? ticker;
   final scroll = ScrollController();
   @override
@@ -74,7 +76,21 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && mounted) setState(() {});
+    if (state == AppLifecycleState.resumed && mounted) {
+      setState(() {});
+      if (data != null) unawaited(syncWidgets(data!));
+    }
+  }
+
+  Future<bool> syncWidgets(ScheduleData value) async {
+    try {
+      await WidgetBridge.sync(value);
+      if (mounted) setState(() => widgetError = null);
+      return true;
+    } catch (_) {
+      if (mounted) setState(() => widgetError = '小组件同步失败，点击重新同步。');
+      return false;
+    }
   }
 
   Future<void> load() async {
@@ -90,6 +106,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
               .weekOf(widget.clock())
               .clamp(1, value.semester.weekCount);
         });
+        unawaited(syncWidgets(value));
       }
     } catch (_) {
       if (mounted) setState(() => loadError = '暂时无法读取本地课表。原始数据已保留，请重试或检查设备存储。');
@@ -115,7 +132,8 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         data = value;
         week = week.clamp(1, value.semester.weekCount);
       });
-      toast(message);
+      final synced = await syncWidgets(value);
+      toast(synced ? message : '$message；小组件同步失败，可在设置中重试。');
       return true;
     } catch (e) {
       toast(e is FormatException ? e.message : '保存失败，当前更改未写入，请检查存储空间后重试。');
@@ -508,6 +526,11 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       ),
       _ => SettingsPage(
         data: data!,
+        supportsWidgets: WidgetBridge.supported,
+        widgetError: widgetError,
+        onWidgetSync: () async {
+          if (await syncWidgets(data!)) toast('已请求更新桌面小组件');
+        },
         onSemester: semesterEditor,
         onExport: exportFile,
         onImport: () => importFile(backupOnly: true),
@@ -766,7 +789,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         ),
         const SizedBox(height: 10),
         const Text(
-          'KEJIAN  /  OPEN SOURCE  /  0.1',
+          'KEJIAN  /  OPEN SOURCE  /  0.2',
           style: TextStyle(fontSize: 8, color: muted, letterSpacing: 1),
         ),
       ],
