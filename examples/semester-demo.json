@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "semester": {
+    "name": "2026 · 秋季学期",
+    "firstMonday": "2026-09-07",
+    "weekCount": 20,
+    "periods": [
+      {
+        "number": 1,
+        "start": "08:00",
+        "end": "08:45"
+      },
+      {
+        "number": 2,
+        "start": "08:55",
+        "end": "09:40"
+      },
+      {
+        "number": 3,
+        "start": "10:00",
+        "end": "10:45"
+      },
+      {
+        "number": 4,
+        "start": "10:55",
+        "end": "11:40"
+      },
+      {
+        "number": 5,
+        "start": "14:00",
+        "end": "14:45"
+      },
+      {
+        "number": 6,
+        "start": "14:55",
+        "end": "15:40"
+      },
+      {
+        "number": 7,
+        "start": "16:00",
+        "end": "16:45"
+      },
+      {
+        "number": 8,
+        "start": "16:55",
+        "end": "17:40"
+      },
+      {
+        "number": 9,
+        "start": "19:00",
+        "end": "19:45"
+      },
+      {
+        "number": 10,
+        "start": "19:55",
+        "end": "20:40"
+      }
+    ]
+  },
+  "courses": [
+    {
+      "id": "math",
+      "name": "高等数学",
+      "teacher": "陈老师",
+      "note": "",
+      "color": 0,
+      "meetings": [
+        {
+          "id": "math-1",
+          "weekday": 1,
+          "startPeriod": 1,
+          "endPeriod": 2,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "博学楼 A301"
+        },
+        {
+          "id": "math-2",
+          "weekday": 4,
+          "startPeriod": 3,
+          "endPeriod": 4,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "博学楼 A301"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "name": "设计思维",
+      "teacher": "林老师",
+      "note": "",
+      "color": 1,
+      "meetings": [
+        {
+          "id": "design-1",
+          "weekday": 1,
+          "startPeriod": 5,
+          "endPeriod": 6,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "创意工坊 203"
+        }
+      ]
+    },
+    {
+      "id": "english",
+      "name": "大学英语",
+      "teacher": "王老师",
+      "note": "",
+      "color": 2,
+      "meetings": [
+        {
+          "id": "english-1",
+          "weekday": 2,
+          "startPeriod": 3,
+          "endPeriod": 4,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "文华楼 B205"
+        },
+        {
+          "id": "english-2",
+          "weekday": 5,
+          "startPeriod": 1,
+          "endPeriod": 2,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "文华楼 B205"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "name": "程序设计",
+      "teacher": "刘老师",
+      "note": "",
+      "color": 3,
+      "meetings": [
+        {
+          "id": "code-1",
+          "weekday": 2,
+          "startPeriod": 5,
+          "endPeriod": 6,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "信息楼 402"
+        },
+        {
+          "id": "code-2",
+          "weekday": 4,
+          "startPeriod": 5,
+          "endPeriod": 6,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "计算中心 301"
+        }
+      ]
+    },
+    {
+      "id": "physics",
+      "name": "大学物理",
+      "teacher": "赵老师",
+      "note": "",
+      "color": 4,
+      "meetings": [
+        {
+          "id": "physics-1",
+          "weekday": 3,
+          "startPeriod": 1,
+          "endPeriod": 2,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "理学楼 102"
+        }
+      ]
+    },
+    {
+      "id": "sport",
+      "name": "体育 · 羽毛球",
+      "teacher": "周老师",
+      "note": "",
+      "color": 5,
+      "meetings": [
+        {
+          "id": "sport-1",
+          "weekday": 3,
+          "startPeriod": 7,
+          "endPeriod": 8,
+          "weeks": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15
+          ],
+          "room": "体育馆 2 号场"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "name": "中国近现代史",
+      "teacher": "李老师",
+      "note": "",
+      "color": 1,
+      "meetings": [
+        {
+          "id": "history-1",
+          "weekday": 5,
+          "startPeriod": 5,
+          "endPeriod": 6,
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "room": "人文楼 201"
+        }
+      ]
+    }
+  ],
+  "exceptions": [],
+  "isDemo": true,
+  "showWeekends": true
+}
