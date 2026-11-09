@@ -24,6 +24,7 @@ WIDGET_ID = APP_ID + ".ScheduleWidget"
 GROUP = "group.dev.kejian.kejian"
 TEAM = "TROLLTROLL"  # Local identity, matching TrollStore's fallback team.
 MACHO64 = b"\xcf\xfa\xed\xfe"
+FAT_MAGICS = (b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca")
 
 
 def read_plist(path: Path) -> dict:
@@ -34,7 +35,7 @@ def read_plist(path: Path) -> dict:
 def macho_details(path: Path) -> dict | None:
     with path.open("rb") as file:
         magic = file.read(4)
-        if magic in (b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"):
+        if magic in FAT_MAGICS:
             raise ValueError(f"Expected a thin arm64 device binary: {path}")
         if magic != MACHO64:
             return None
@@ -150,6 +151,18 @@ def sign_bundle(app: Path, temp: Path) -> list[dict]:
     for path in sorted(app.rglob("*")):
         if not path.is_file() or path.is_symlink():
             continue
+        with path.open("rb") as file:
+            magic = file.read(4)
+        if magic in FAT_MAGICS:
+            # Flutter can wrap a single arm64 slice in a universal Mach-O.
+            # Normalize that wrapper, then check its actual platform below.
+            architectures = subprocess.check_output(["lipo", "-archs", str(path)], text=True).split()
+            if architectures != ["arm64"]:
+                raise ValueError(f"Expected only arm64 device slices: {path}: {architectures}")
+            thin = temp / "normalized-arm64"
+            subprocess.run(["lipo", "-thin", "arm64", str(path), "-output", str(thin)], check=True)
+            shutil.copymode(path, thin)
+            thin.replace(path)
         details = macho_details(path)
         if details is None:
             continue

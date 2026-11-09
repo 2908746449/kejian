@@ -38,7 +38,24 @@ flutter build apk --release --target-platform android-arm64
 
 主 App 和扩展版本均从 Flutter 的版本名、构建号读取。任何 Bundle Identifier 或 App Group 变更，都需同时检查扩展与 App，避免只有 App 安装成功而小组件拿不到课表。
 
-`.github/workflows/mobile.yml` 提供 Android debug APK 与 iOS 模拟器 App 的构建流程。[0.3.1 的两个任务均已成功](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不包含签名或商店发布凭据。
+### 已安装 TrollStore 的设备
+
+已有可用 TrollStore 的设备可安装真机 Release IPA。项目最低 iOS 15.0；TrollStore 官方支持 14.0 beta 2—16.6.1、16.7 RC（20H18）和 17.0，因此应同时满足项目和安装工具的版本要求。iOS 15.6.1 在范围内。这里的 IPA 不用于 TestFlight 或 App Store。
+
+安装时将 `kejian-ios-trollstore-v0.3.1.ipa` 分享给 TrollStore 并确认安装。先打开课间一次，导入或建立课表，再长按主屏幕空白处 → 左上角「+」→ 搜索「课间」→ 选择小、中、大尺寸 → 添加小组件。进入课间的设置页可重试同步；系统决定实际刷新时机。安装、三个尺寸和同步仍需在实际设备验收。
+
+`.github/workflows/mobile.yml` 手动运行时新增 `ios-trollstore` 任务：
+
+```sh
+brew install ldid
+flutter pub get
+flutter build ios --release --no-codesign
+python3 tool/package_trollstore_ipa.py --app build/ios/iphoneos/Runner.app --output build/ios/ipa
+```
+
+该任务使用 `iphoneos` SDK 和 Flutter AOT Release。打包脚本检查两个 target 的最低系统、版本、Bundle Identifier、App Group、内嵌 WidgetKit 扩展，以及所有 Mach-O 的 arm64 架构和 iPhoneOS 平台。主 App 和扩展分别保留应用身份及共享组权限，使用本地 `TROLLTROLL` 身份；TrollStore 在手机上完成安装签名。脚本用 ldid 读取权限并逐页核对 CodeDirectory 哈希，输出 `Payload/Runner.app` 结构的 IPA 和 JSON 校验报告。ldid 伪签名没有 Apple CMS 签名，不使用 macOS `codesign --verify` 判断其是否可被 TrollStore 安装。
+
+GitHub 的两个已有任务仍提供 Android debug APK 与 iOS 模拟器 App。[0.3.1 的两个任务均已成功](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不保存 Apple 开发者签名或商店发布凭据。
 
 ## 数据一致性与刷新
 
@@ -65,3 +82,5 @@ flutter build apk --release --target-platform android-arm64
 - Android 小组件更新：https://developer.android.com/develop/ui/views/appwidgets/advanced
 - WidgetKit 时间线与刷新：https://developer.apple.com/documentation/widgetkit/keeping-a-widget-up-to-date
 - App Groups：https://developer.apple.com/documentation/xcode/configuring-app-groups
+- TrollStore 官方版本范围与 IPA 权限说明：https://github.com/opa334/TrollStore
+- TrollStore 小组件容器问题记录：https://github.com/opa334/TrollStore/issues/873

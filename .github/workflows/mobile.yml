@@ -1,6 +1,14 @@
 name: Mobile builds
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Platforms to build
+        type: choice
+        default: all
+        options:
+          - all
+          - ios-trollstore
   pull_request:
     paths:
       - 'lib/**'
@@ -12,6 +20,7 @@ permissions:
   contents: read
 jobs:
   android:
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'ios-trollstore'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +42,7 @@ jobs:
           name: kejian-android-debug
           path: build/app/outputs/flutter-apk/app-debug.apk
   ios:
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'ios-trollstore'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,6 +78,13 @@ jobs:
           "$RUNNER_TEMP/check-widget" examples/widget-snapshot.json
       - name: Build iPhoneOS release app
         run: flutter build ios --release --no-codesign
+      - name: Preserve device build for packaging diagnostics
+        run: ditto -c -k --keepParent --norsrc build/ios/iphoneos/Runner.app "$RUNNER_TEMP/kejian-ios-device-app.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kejian-ios-device-app
+          path: ${{ runner.temp }}/kejian-ios-device-app.zip
+          if-no-files-found: error
       - name: Package and validate TrollStore IPA
         run: |
           set -euo pipefail
