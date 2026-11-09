@@ -38,7 +38,7 @@ flutter build apk --release --target-platform android-arm64
 
 主 App 和扩展版本均从 Flutter 的版本名、构建号读取。任何 Bundle Identifier 或 App Group 变更，都需同时检查扩展与 App，避免只有 App 安装成功而小组件拿不到课表。
 
-`.github/workflows/mobile.yml` 提供 Android debug APK 与 iOS 模拟器 App 的构建流程。iOS 任务已在远程成功；Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不包含签名或商店发布凭据。
+`.github/workflows/mobile.yml` 提供 Android debug APK 与 iOS 模拟器 App 的构建流程。[0.3.1 的两个任务均已成功](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不包含签名或商店发布凭据。
 
 ## 数据一致性与刷新
 

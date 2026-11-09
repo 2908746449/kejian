@@ -15,6 +15,7 @@
 - GitHub 的 [Check 流程](https://github.com/2908746449/kejian/actions/runs/42566007284) 全部通过，包含格式、静态分析、39 项测试和 Web 构建。
 - [Mobile builds](https://github.com/2908746449/kejian/actions/runs/42566023283) 的 iOS 任务成功：完成工程检查、10 项 Foundation 检查、`flutter build ios --simulator --debug --no-codesign`、模拟器 App 打包和 artifact 上传。初次 Android 任务因 setup-android 默认请求已下架的 `tools` 包而失败，已显式指定 SDK 包后重试。这些云端结果不代表已验证小米或 iOS 真机。
 - 已下载并检查 iOS 模拟器 artifact：`Runner.app/PlugIns/ScheduleWidget.appex` 确实内嵌；App / Widget 的版本均为 0.3.1 / 4，两个 `MinimumOSVersion` 均为 15.0；不含私人课表。后续重跑曾因 PDFium 上游二进制下载 HTTP 504 失败，属于依赖获取问题；已有的成功编译记录和产物保留。
+- 修复初始化并重跑后，[Mobile builds 的 Android / iOS 两个任务均通过](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android debug APK 和内嵌扩展的 iOS 模拟器 App 均已上传 Actions artifact。文档更新后的 [Check 流程也已通过](https://github.com/2908746449/kejian/actions/runs/42567399260)。
 
 ## v0.3 文档识别检查
 
