@@ -23,9 +23,9 @@ flutter build apk --release --target-platform android-arm64
 
 ## iOS 15 及以上
 
-`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。WidgetKit 扩展内置小、中、大三种主屏幕尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建；本轮未通过 iOS SDK 编译。
+`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。WidgetKit 扩展内置小、中、大三种主屏幕尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
 
-本机缺少完整 Xcode，当前交付为**已配置但尚未通过 iOS 编译和真机验证的源码工程**，没有可安装 IPA。
+本机缺少完整 Xcode。0.3.1 已在 [GitHub Actions](https://github.com/2908746449/kejian/actions/runs/42566023283) 使用完整 Xcode 完成 App 和 WidgetKit 扩展的模拟器编译，并上传 `kejian-ios-simulator` 构建产物。模拟器包不等于真机 IPA；尚未配置开发团队签名，也没有完成 iOS 15 真机或 WidgetKit 运行验证。
 
 在有完整 Xcode 的 Mac 上：
 
@@ -38,7 +38,7 @@ flutter build apk --release --target-platform android-arm64
 
 主 App 和扩展版本均从 Flutter 的版本名、构建号读取。任何 Bundle Identifier 或 App Group 变更，都需同时检查扩展与 App，避免只有 App 安装成功而小组件拿不到课表。
 
-`.github/workflows/mobile.yml` 提供 Android debug APK 与 iOS 模拟器 App 的构建流程。它尚未在远程执行，也不包含签名或商店发布凭据。
+`.github/workflows/mobile.yml` 提供 Android debug APK 与 iOS 模拟器 App 的构建流程。iOS 任务已在远程成功；Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不包含签名或商店发布凭据。
 
 ## 数据一致性与刷新
 

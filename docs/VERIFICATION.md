@@ -8,8 +8,11 @@
 - 0.3.0 的已安装 release 包在 Android 13 / API 33 系统 `dumpsys appwidget` 中存在 `dev.kejian.kejian.ScheduleWidget` provider，未复现系统注册丢失。没有据此将 Receiver 的 `exported=false` 判为问题。
 - 根据小米官方小部件适配说明，原生 Android 小组件有单独的「安卓小部件」入口。设置页增加准确路径，以及 Android 8+ 的系统固定请求；Android 7、不支持的桌面或请求失败均保留手动指引。
 - 静态分析、Dart 格式检查、39 项 Flutter 测试通过。新增请求前同步、请求后仍等待确认、不支持桌面的指引、失败重试、不改变课表、iOS 不发送 Android 请求的覆盖。
-- iOS 工程配置检查、Swift 语法和 10 项 Foundation 数据/时间线检查通过；尚未通过本地 iOS SDK 编译。
-- 原生添加集成测试、最终 release 包及 GitHub Actions 的结果在完成后追加；本段不代表已验证小米真机。
+- iOS 工程配置检查、Swift 语法和 10 项 Foundation 数据/时间线检查通过。本机仍无完整 Xcode；云端已完成 App 和扩展的真正 iOS SDK 模拟器编译，见下文。
+- `flutter test integration_test/widget_pinning_test.dart -d emulator-5580` 通过。系统 API 确认 provider 已注册、桌面支持固定请求；App 设置按钮先同步，再调用系统 API。实际截图 `kejian-widget-add-dialog.png` 显示系统「Add to home screen」确认框、课间名称和布局预览。只验证请求与弹窗，没有通过该测试确认最终桌面放置。
+- 0.3.1 / 4 release arm64 APK 构建成功，约 70.1 MB，minSdk 24 / targetSdk 36；`apksigner verify` 通过。运行集成测试后使用正常 `flutter build apk --release` 重新生成插件注册表，避免 `--no-pub` 复用测试插件的生成文件。Web release 构建成功。
+- GitHub 的 [Check 流程](https://github.com/2908746449/kejian/actions/runs/42566007284) 全部通过，包含格式、静态分析、39 项测试和 Web 构建。
+- [Mobile builds](https://github.com/2908746449/kejian/actions/runs/42566023283) 的 iOS 任务成功：完成工程检查、10 项 Foundation 检查、`flutter build ios --simulator --debug --no-codesign`、模拟器 App 打包和 artifact 上传。初次 Android 任务因 setup-android 默认请求已下架的 `tools` 包而失败，已显式指定 SDK 包后重试。这些云端结果不代表已验证小米或 iOS 真机。
 
 ## v0.3 文档识别检查
 
@@ -36,7 +39,7 @@
 - 本轮实际浏览器验证 390×844 手机布局与默认宽屏；下一节下方仅剩一门时显示完整卡片。自定义周次框可输入 `1 3 5 8-12`，下方提示空格/逗号/范围。未保存测试表单到用户预览课表。
 - 本轮浏览器没有捕获 error / warn 日志；`outputs/kejian-mobile.jpg` 与 `outputs/kejian-weeks.jpg` 保存新版截图。
 
-## iOS 检查与明确限制
+## iOS 本地检查与初始限制（v0.3.0）
 
 - Runner 和 ScheduleWidget 两个 target 的 Debug / Release / Profile 都明确设置 `IPHONEOS_DEPLOYMENT_TARGET = 15.0`；Flutter Framework 最低版本元数据为 15.0。
 - `plutil` 检查工程、Info.plist 和两个 entitlements 均通过。
@@ -44,8 +47,8 @@
 - `swiftc -parse` 检查 AppDelegate、共享模型与 Widget SwiftUI 源码语法。
 - 用 macOS Command Line Tools 实际编译并运行共享 Foundation 数据模型的 10 项边界/时间线检查：上课开始与结束、学期边界、午夜条目、时区切换和未知版本拒绝。它没有编译 WidgetKit/SwiftUI 或 Flutter iOS 应用。
 - 尝试 `flutter build ios --simulator --debug --no-codesign --no-pub`，在读取 Xcode 项目设置阶段退出，提示 `Application not configured for iOS`。本机 `xcodebuild -version` 明确报错：需要完整 Xcode，当前选择的是 `/Library/Developer/CommandLineTools`。该命令没有进入 iOS SDK 编译阶段。
-- **没有 iOS App / IPA 编译成功记录，没有完成签名、iOS 15 真机或 iOS 小组件运行验证。** 三种 WidgetKit 尺寸和 App Group 通道为已实现的工程代码，实际兼容性须在完整 Xcode 环境验证。
-- `.github/workflows/mobile.yml` 已添加 Android / iOS 模拟器构建流程，尚未上传或运行 GitHub Actions。
+- **v0.3.0 阶段没有 iOS App / IPA 编译成功记录，没有完成签名、iOS 15 真机或 iOS 小组件运行验证。** v0.3.1 的云端编译结果见本文开头，真机运行仍待验证。
+- v0.3.0 添加了 `.github/workflows/mobile.yml`，当时尚未上传或运行 GitHub Actions。
 
 可复现的原生检查：
 
@@ -64,6 +67,6 @@ swiftc ios/Shared/WidgetSnapshot.swift tool/check_widget_snapshot.swift -o /tmp/
 
 - Android 7.0 最低系统与不同厂商桌面、电池策略、跨午夜、重启、时区改变、真实文件导入/导出及调课后的后台刷新。
 - 有完整 Xcode 后编译 App 与扩展，在 iOS 15 及较新系统实际验收小中大尺寸、共享文件、停课/调课同步和后台时间线。
-- 两端正式分发前配置自己的标识与签名。没有发布到 GitHub、TestFlight 或应用商店。
+- 两端正式分发前配置自己的标识与签名。源码已发布到 GitHub，没有发布到 TestFlight 或应用商店。
 
 构建、签名与添加小组件的方法见 `MOBILE.md`。

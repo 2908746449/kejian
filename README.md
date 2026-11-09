@@ -2,7 +2,7 @@
 
 一个留白多一点的开源大学课程表。手机优先，免登录，课表由你掌握。
 
-当前版本：**0.3.1 开发预览**。Flutter 3.47.9 / Dart 3.13.7。Android arm64 APK 已完成构建和模拟器验证；iOS 最低版本为 15.0，包含 WidgetKit 扩展，尚待完整 Xcode 编译。Web 可直接预览。详细状态见 `docs/VERIFICATION.md`。
+当前版本：**0.3.1 开发预览**。Flutter 3.47.9 / Dart 3.13.7。Android arm64 APK 已完成构建和模拟器验证；iOS App 与 WidgetKit 扩展最低版本为 15.0，已通过 GitHub Actions 的 Xcode 模拟器编译，尚待真机验证。Web 可直接预览。详细状态见 `docs/VERIFICATION.md`。
 
 [下载 Android 安装包](https://github.com/2908746449/kejian/releases) · [报告问题](https://github.com/2908746449/kejian/issues)
 
@@ -41,7 +41,7 @@ flutter build apk --release --target-platform android-arm64
 
 Android 当前使用开发包标识 `dev.kejian.kejian`。正式发布前需确定包名、配置自己的签名，不能将模板内的 debug 签名配置用作正式发行方案。
 
-iOS App 与 Widget 扩展均设置最低 iOS 15.0。运行/打包需完整 Xcode；真机和 IPA 还需团队签名及 App Group。当前本机仅有 Command Line Tools，未验证 iOS 编译，也没有生成 IPA。配置、构建和添加小组件的方法见 [移动端与小组件说明](docs/MOBILE.md)。
+iOS App 与 Widget 扩展均设置最低 iOS 15.0。云端已生成未签名的模拟器 App；它不能安装到 iPhone。当前本机仅有 Command Line Tools，真机和 IPA 仍需完整 Xcode、团队签名及 App Group。配置、构建和添加小组件的方法见 [移动端与小组件说明](docs/MOBILE.md)。
 
 中国大陆网络可按需使用 Flutter 官方文档列出的镜像环境：
 
