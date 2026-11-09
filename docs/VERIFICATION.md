@@ -11,8 +11,10 @@
 - iOS 工程配置检查、Swift 语法和 10 项 Foundation 数据/时间线检查通过。本机仍无完整 Xcode；云端已完成 App 和扩展的真正 iOS SDK 模拟器编译，见下文。
 - `flutter test integration_test/widget_pinning_test.dart -d emulator-5580` 通过。系统 API 确认 provider 已注册、桌面支持固定请求；App 设置按钮先同步，再调用系统 API。实际截图 `kejian-widget-add-dialog.png` 显示系统「Add to home screen」确认框、课间名称和布局预览。只验证请求与弹窗，没有通过该测试确认最终桌面放置。
 - 0.3.1 / 4 release arm64 APK 构建成功，约 70.1 MB，minSdk 24 / targetSdk 36；`apksigner verify` 通过。运行集成测试后使用正常 `flutter build apk --release` 重新生成插件注册表，避免 `--no-pub` 复用测试插件的生成文件。Web release 构建成功。
+- 最终 release 包已在专用 Android 13 模拟器覆盖安装并启动；系统状态为 `stopped=false`、`notLaunched=false`，provider 仍被识别。0.3.0 和 0.3.1 的签名证书 SHA-256 相同，保持原包名，可覆盖旧版；未清空应用数据。发布包中不含 integration_test 插件或私人测试资产。
 - GitHub 的 [Check 流程](https://github.com/2908746449/kejian/actions/runs/42566007284) 全部通过，包含格式、静态分析、39 项测试和 Web 构建。
 - [Mobile builds](https://github.com/2908746449/kejian/actions/runs/42566023283) 的 iOS 任务成功：完成工程检查、10 项 Foundation 检查、`flutter build ios --simulator --debug --no-codesign`、模拟器 App 打包和 artifact 上传。初次 Android 任务因 setup-android 默认请求已下架的 `tools` 包而失败，已显式指定 SDK 包后重试。这些云端结果不代表已验证小米或 iOS 真机。
+- 已下载并检查 iOS 模拟器 artifact：`Runner.app/PlugIns/ScheduleWidget.appex` 确实内嵌；App / Widget 的版本均为 0.3.1 / 4，两个 `MinimumOSVersion` 均为 15.0；不含私人课表。后续重跑曾因 PDFium 上游二进制下载 HTTP 504 失败，属于依赖获取问题；已有的成功编译记录和产物保留。
 
 ## v0.3 文档识别检查
 
