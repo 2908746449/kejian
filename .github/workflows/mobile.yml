@@ -51,3 +51,31 @@ jobs:
         with:
           name: kejian-ios-simulator
           path: ${{ runner.temp }}/kejian-ios-simulator.zip
+  ios-trollstore:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.9'
+          cache: true
+      - run: brew install ldid
+      - run: flutter pub get
+      - run: python3 tool/check_ios_project.py
+      - run: |
+          swiftc ios/Shared/WidgetSnapshot.swift tool/check_widget_snapshot.swift -o "$RUNNER_TEMP/check-widget"
+          "$RUNNER_TEMP/check-widget" examples/widget-snapshot.json
+      - name: Build iPhoneOS release app
+        run: flutter build ios --release --no-codesign
+      - name: Package and validate TrollStore IPA
+        run: |
+          set -euo pipefail
+          python3 tool/package_trollstore_ipa.py --app build/ios/iphoneos/Runner.app --output "$RUNNER_TEMP"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kejian-ios-trollstore
+          path: |
+            ${{ runner.temp }}/kejian-ios-trollstore-v*.ipa
+            ${{ runner.temp }}/kejian-ios-trollstore-v*.json
+          if-no-files-found: error
