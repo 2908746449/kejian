@@ -2,6 +2,17 @@
 
 日期：2026-11-09。版本：0.3.1 开发预览。
 
+## v0.3.1 iPhone 真机编译与 TrollStore IPA
+
+- 使用完整 Xcode 的 GitHub macOS runner 运行 `flutter build ios --release --no-codesign`，完成 iPhoneOS SDK 的 App 和 WidgetKit 扩展编译。Flutter AOT Release 不依赖 JIT。
+- [最终构建与打包任务](https://github.com/2908746449/kejian/actions/runs/42580413334) 提供 `kejian-ios-trollstore` artifact，包含 IPA 和 JSON 校验报告；另存原始真机 App artifact 供开发检查。任务可通过 `target=ios-trollstore` 单独执行。
+- `tool/package_trollstore_ipa.py` 检查 App 和扩展均为 0.3.1 / 4、最低 iOS 15.0、相同 App Group、iPhoneOS 平台和完整内嵌 WidgetKit；将 Flutter 单个 arm64 slice 的 universal 封装统一为普通 arm64 Mach-O，拒绝混入模拟器平台或其他架构。
+- ldid 分别写入主 App 与扩展的应用身份和共享组 entitlements，并重新读取核对。所有原生二进制的 CodeDirectory 代码页和权限哈希均检查通过；IPA 使用 `Payload/Runner.app` 结构。JSON 报告记录每个二进制及最终 IPA 的 SHA-256、最低系统、平台和构建提交。
+- 对签名检查器做了实际二进制检查：接受未修改的 ldid 代码哈希、拒绝翻转一个代码字节后的文件；平台检查拒绝 arm64 模拟器。首次打包错误地使用了要求 CMS 的 `codesign --verify`，已改为验证 ldid 代码页与权限；随后修正 Flutter 单架构 universal 封装的处理。两次前期失败均发生于打包阶段，真机 Release 编译已通过。
+- 本轮本地 39 项 Flutter 测试及 iOS 工程检查通过。[构建提交的 Check 流程](https://github.com/2908746449/kejian/actions/runs/42580412524) 也已通过。之前一次 Linux 检查因上游 PDFium 返回 HTTP 504 失败；没有将下载失败表述为应用测试失败或省略既有测试。
+- 发布补充 IPA、校验报告和安装说明，保留原 v0.3.1 的 APK、模拟器、Web 和源码压缩包；应用源码及版本未变，新增打包工具位于 main。
+- 用户确认已有可用 TrollStore，系统为 iOS 15.6.1。官方版本范围包含该系统。**本轮未连接 iPhone；尚待安装、App Group 实际写入、PDF / 图片导入以及小中大组件运行和刷新验收。**
+
 ## v0.3.1 Android 小组件添加入口
 
 - 用户反馈环境为小米 14 Pro / 澎湃 OS 1 / Android 14，症状是小部件列表找不到课间。本轮只连接了专用 Android 模拟器，没有连接该真机。
@@ -69,7 +80,7 @@ swiftc ios/Shared/WidgetSnapshot.swift tool/check_widget_snapshot.swift -o /tmp/
 ## 尚需设备验证
 
 - Android 7.0 最低系统与不同厂商桌面、电池策略、跨午夜、重启、时区改变、真实文件导入/导出及调课后的后台刷新。
-- 有完整 Xcode 后编译 App 与扩展，在 iOS 15 及较新系统实际验收小中大尺寸、共享文件、停课/调课同步和后台时间线。
+- 在 iOS 15 及较新系统实际验收安装、小中大尺寸、共享文件、停课/调课同步和后台时间线。
 - 两端正式分发前配置自己的标识与签名。源码已发布到 GitHub，没有发布到 TestFlight 或应用商店。
 
 构建、签名与添加小组件的方法见 `MOBILE.md`。

@@ -25,9 +25,9 @@ flutter build apk --release --target-platform android-arm64
 
 `Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。WidgetKit 扩展内置小、中、大三种主屏幕尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
 
-本机缺少完整 Xcode。0.3.1 已在 [GitHub Actions](https://github.com/2908746449/kejian/actions/runs/42566023283) 使用完整 Xcode 完成 App 和 WidgetKit 扩展的模拟器编译，并上传 `kejian-ios-simulator` 构建产物。模拟器包不等于真机 IPA；尚未配置开发团队签名，也没有完成 iOS 15 真机或 WidgetKit 运行验证。
+本机缺少完整 Xcode。0.3.1 已在 GitHub Actions 使用完整 Xcode 完成 App 和 WidgetKit 扩展的[模拟器编译](https://github.com/2908746449/kejian/actions/runs/42566023283)，以及 [iPhoneOS Release 与 TrollStore IPA 打包](https://github.com/2908746449/kejian/actions/runs/42580413334)。两个产物分别提供，iPhone 使用 `kejian-ios-trollstore-v0.3.1.ipa`。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
 
-在有完整 Xcode 的 Mac 上：
+使用 Apple 开发团队签名时，在有完整 Xcode 的 Mac 上：
 
 1. 安装项目所需 Flutter 3.47.9 并执行 `flutter pub get`。项目级启用 Swift Package Manager，当前 iOS 插件提供 Swift package；不要求先安装 CocoaPods。
 2. 执行 `flutter build ios --simulator --debug --no-codesign` 验证编译，然后打开 `ios/Runner.xcworkspace`。
@@ -70,7 +70,7 @@ GitHub 的两个已有任务仍提供 Android debug APK 与 iOS 模拟器 App。
 
 ## 必须补充的设备验证
 
-有 Xcode 后，至少在 iOS 15 和较新版本验证安装、App Group 写入、小中大布局、午夜切换、上课开始/结束、停课/调课后更新、重启及设备时区改变。Android 需补充不同厂商桌面与电池管理行为。模拟器与逻辑测试不能替代这些检查。
+至少在 iOS 15 和较新版本验证安装、App Group 写入、小中大布局、午夜切换、上课开始/结束、停课/调课后更新、重启及设备时区改变。TrollStore 安装和 Apple 签名分发分别验收。Android 需补充不同厂商桌面与电池管理行为。编译与逻辑测试不能替代这些检查。
 
 ## 官方资料
 
