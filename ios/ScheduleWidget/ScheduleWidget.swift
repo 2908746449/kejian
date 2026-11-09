@@ -127,8 +127,8 @@ struct KejianWideScheduleWidget: Widget {
       ScheduleWidgetView(entry: entry, wide: true)
     }
     .configurationDisplayName("课间 · 宽版")
-    .description("左右并排显示接下来的两门课、时间与教室。")
-    .supportedFamilies([.systemMedium, .systemLarge])
+    .description("横向长方形，左右并排显示接下来的两门课、时间与教室。")
+    .supportedFamilies([.systemMedium])
   }
 }
 

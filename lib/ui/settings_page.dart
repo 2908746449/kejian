@@ -87,7 +87,7 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 androidWidgets
-                    ? '原版保留原来的尺寸，宽版左右显示两门课。选择下方按钮，再在系统弹窗中确认。'
+                    ? '原版保留原来的尺寸，宽版为 4×2 横向长方形，左右显示两门课。选择下方按钮，再在系统弹窗中确认。'
                     : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n可选原版或宽版，均显示接下来的两门课及时间、教室。',
                 style: const TextStyle(color: muted, fontSize: 12, height: 1.8),
               ),

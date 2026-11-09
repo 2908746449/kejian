@@ -2,7 +2,7 @@
 
 版本：0.3.2 开发预览，2026-11-09。
 
-默认凯里学院作息；Android 和 iOS 均提供原版与宽版两个独立入口，都显示接下来的两门课，跨日期接续，时间来自当前已保存作息。原版保留旧尺寸并上下排列，宽版左右排列。Android 原版最小宽高 250×130dp，宽版 300×130dp；iOS 原版支持小、中、大尺寸，宽版支持中、大尺寸。完整说明见 `TIMETABLE_DEFAULTS.md`。
+默认凯里学院作息；Android 和 iOS 均提供原版与宽版两个独立入口，都显示接下来的两门课，跨日期接续，时间来自当前已保存作息。原版保留旧尺寸并上下排列，宽版为横向长方形并左右排列。Android 原版最小宽高 250×130dp，宽版默认 4×2、备用最小宽高 250×110dp，仅横向缩放；iOS 原版支持小、中、大尺寸，宽版仅支持横向中尺寸。完整说明见 `TIMETABLE_DEFAULTS.md`。
 
 ## Android
 
@@ -12,7 +12,7 @@ Android 7.0 / API 24 及以上，交付的 APK 为 arm64（多数现代 Android 
 
 小米 / 澎湃 OS 的小部件中心有独立的安卓原生小部件入口：桌面双指捏合或长按空白处 → 添加小部件 → 右上角搜索 → 应用列表底部的「安卓小部件」→ 课间。部分桌面版本入口名为「全部应用小部件」。课间没有接入小米专有小部件中心。该路径依据小米官方适配说明；本轮未连接小米 14 Pro 真机。
 
-其他桌面：长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。选择「课间」原版或「课间 · 宽版」。实际占格由桌面决定，可缩放；原版保留旧尺寸并上下排列，宽版左右显示下一节和再下一节。点击组件打开 App。组件同时提供 Android 12+ 的布局预览和旧桌面使用的图片预览。Receiver 保持 `exported=false`，遵循 Android 官方注册示例。
+其他桌面：长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。选择「课间」原版或「课间 · 宽版」。实际占格由桌面决定，可缩放；原版保留旧尺寸并上下排列，宽版默认 4×2、左右显示下一节和再下一节。点击组件打开 App。组件同时提供 Android 12+ 的布局预览和旧桌面使用的图片预览。Receiver 保持 `exported=false`，遵循 Android 官方注册示例。
 
 无账号、无课表上传服务、无精确闹钟权限。图片识别的中文 ML Kit 模型随安装包打包，无需在线下载；PDF 由 PDFium 本地提取。
 
@@ -25,7 +25,7 @@ flutter build apk --release --target-platform android-arm64
 
 ## iOS 15 及以上
 
-`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。同一 WidgetKit 扩展通过 WidgetBundle 注册「课间 · 原版」与「课间 · 宽版」；原版保留小、中、大三种主屏幕尺寸，宽版支持中、大尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
+`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。同一 WidgetKit 扩展通过 WidgetBundle 注册「课间 · 原版」与「课间 · 宽版」；原版保留小、中、大三种主屏幕尺寸，宽版仅支持横向中尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
 
 本机缺少完整 Xcode。0.3.1 已在 GitHub Actions 使用完整 Xcode 完成 App 和 WidgetKit 扩展的[模拟器编译](https://github.com/2908746449/kejian/actions/runs/42566023283)，以及 [iPhoneOS Release 与 TrollStore IPA 打包](https://github.com/2908746449/kejian/actions/runs/42580413334)。两个产物分别提供，iPhone 使用 `kejian-ios-trollstore-v0.3.1.ipa`。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
 
@@ -36,7 +36,7 @@ flutter build apk --release --target-platform android-arm64
 3. 真机/归档时为 `Runner` 和 `ScheduleWidget` 选择同一个 Apple 开发团队；确认两个 Bundle Identifier 属于自己的团队（默认 `dev.kejian.kejian` 与 `dev.kejian.kejian.ScheduleWidget`）。
 4. 在两个 target 的 Signing & Capabilities 中配置同一个 App Group。工程级 `KEJIAN_APP_GROUP` 默认 `group.dev.kejian.kejian`，应替换为团队实际注册的组。Info.plist、两个 entitlement 及读写代码从该设置取值。
 5. 使用 Runner scheme 运行或归档；扩展已经设为 Runner 的依赖并嵌入 `PlugIns`；嵌入阶段位于 Flutter Run Script 之前，无需单独拷贝。正式 IPA 通过 Xcode Organizer 导出或在完成签名配置后执行 `flutter build ipa`。
-6. 在手机桌面长按 → 添加小组件 → 课间，分别检查原版的小中大尺寸与宽版的中大尺寸。
+6. 在手机桌面长按 → 添加小组件 → 课间，分别检查原版的小中大尺寸与宽版的横向中尺寸。
 
 主 App 和扩展版本均从 Flutter 的版本名、构建号读取。任何 Bundle Identifier 或 App Group 变更，都需同时检查扩展与 App，避免只有 App 安装成功而小组件拿不到课表。
 
