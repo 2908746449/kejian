@@ -1,12 +1,18 @@
 # Android / iOS 与桌面小组件
 
-版本：0.3.0 开发预览，2026-11-09。
+版本：0.3.1 开发预览，2026-11-09。
 
 ## Android
 
 Android 7.0 / API 24 及以上，交付的 APK 为 arm64（多数现代 Android 手机）。`android/app/src/main/kotlin/dev/kejian/kejian/ScheduleWidget.kt` 使用系统 AppWidget / RemoteViews，无需运行 Flutter 页面。
 
-打开 App 保存课表后，在桌面长按空白处 → 小组件 → 课间。默认尺寸由桌面决定，可缩放；较高尺寸展示今日后续课程。点击组件打开 App。无账号、无课表上传服务、无精确闹钟权限。图片识别的中文 ML Kit 模型随安装包打包，无需在线下载；PDF 由 PDFium 本地提取。
+打开 App → 设置 → 桌面小组件 → **添加到桌面**，在系统弹窗中确认。Android 8 及以上且桌面支持时，通过系统 `requestPinAppWidget` 请求添加；接受请求不代表已添加，用户仍可取消。回到 App 后会重新读取系统实际绑定的数量。不支持直接添加、Android 7 或点击后没有弹窗时使用手动方式。
+
+小米 / 澎湃 OS 的小部件中心有独立的安卓原生小部件入口：桌面双指捏合或长按空白处 → 添加小部件 → 右上角搜索 → 应用列表底部的「安卓小部件」→ 课间。部分桌面版本入口名为「全部应用小部件」。课间没有接入小米专有小部件中心。该路径依据小米官方适配说明；本轮未连接小米 14 Pro 真机。
+
+其他桌面：长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。默认尺寸由桌面决定，可缩放；较高尺寸展示今日后续课程。点击组件打开 App。组件同时提供 Android 12+ 的布局预览和旧桌面使用的图片预览。Receiver 保持 `exported=false`，遵循 Android 官方注册示例。
+
+无账号、无课表上传服务、无精确闹钟权限。图片识别的中文 ML Kit 模型随安装包打包，无需在线下载；PDF 由 PDFium 本地提取。
 
 ```sh
 flutter pub get
@@ -54,6 +60,8 @@ flutter build apk --release --target-platform android-arm64
 - Flutter 扩展接入：https://docs.flutter.dev/platform-integration/ios/app-extensions
 - Flutter 支持平台：https://docs.flutter.dev/reference/supported-platforms
 - Android App Widgets：https://developer.android.com/develop/ui/views/appwidgets/overview
+- Android 添加请求：https://developer.android.com/reference/android/appwidget/AppWidgetManager#requestPinAppWidget(android.content.ComponentName,android.os.Bundle,android.app.PendingIntent)
+- 小米小部件适配说明（含安卓小部件入口）：https://dev.mi.com/xiaomihyperos/documentation/detail?pId=1588
 - Android 小组件更新：https://developer.android.com/develop/ui/views/appwidgets/advanced
 - WidgetKit 时间线与刷新：https://developer.apple.com/documentation/widgetkit/keeping-a-widget-up-to-date
 - App Groups：https://developer.apple.com/documentation/xcode/configuring-app-groups

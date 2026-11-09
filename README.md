@@ -2,13 +2,15 @@
 
 一个留白多一点的开源大学课程表。手机优先，免登录，课表由你掌握。
 
-当前版本：**0.3.0 开发预览**。Flutter 3.47.9 / Dart 3.13.7。Android arm64 APK 已完成构建和模拟器验证；iOS 最低版本为 15.0，包含 WidgetKit 扩展，尚待完整 Xcode 编译。Web 可直接预览。详细状态见 `docs/VERIFICATION.md`。
+当前版本：**0.3.1 开发预览**。Flutter 3.47.9 / Dart 3.13.7。Android arm64 APK 已完成构建和模拟器验证；iOS 最低版本为 15.0，包含 WidgetKit 扩展，尚待完整 Xcode 编译。Web 可直接预览。详细状态见 `docs/VERIFICATION.md`。
+
+[下载 Android 安装包](https://github.com/2908746449/kejian/releases) · [报告问题](https://github.com/2908746449/kejian/issues)
 
 ## 已实现
 
 - 周课表、当前周定位、下一节课、今天高亮和周末显示开关。
 - 下一节下方展示当日剩余课程小卡：逐节减少，单个展开；当天只剩主卡时预览明天。
-- Android 原生桌面小组件；iOS 15+ 小、中、大 WidgetKit 组件工程。
+- Android 原生桌面小组件，支持 App 内请求添加、检测已添加数量和澎湃 OS 操作指引；iOS 15+ 小、中、大 WidgetKit 组件工程。
 - 课程增删改查，一门课支持多组时间、不同教室、自选周次、单双周；自定义周次支持空格，如 `1 3 5 8-12`。
 - 单次停课、跨周调课、临时换教室、撤销变更。
 - 冲突提示与并排显示，重叠课程仍可点击。
@@ -66,7 +68,7 @@ flutter analyze
 flutter test
 ```
 
-35 项 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败。原生共享数据与时间线另有 10 项 Swift Foundation 检查；它们不能替代 iOS UI 编译与设备验证。
+39 项 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败、添加请求和失败重试。原生共享数据与时间线另有 10 项 Swift Foundation 检查；它们不能替代 iOS UI 编译与设备验证。
 
 示例文件在 `examples/`；可运行 `dart run tool/generate_examples.dart` 重新生成。当前示例固定采用 2026 年秋季学期，仅用于演示和测试。
 
@@ -80,7 +82,7 @@ flutter test
 - [GitHub 参考与第三方素材](docs/REFERENCES.md)
 - [参与贡献](CONTRIBUTING.md)
 
-本地仓库已准备，尚未发布到 GitHub。界面、课程规则与数据模型为独立实现；参考项目及各自许可记录在参考文档中。
+源码托管于 [2908746449/kejian](https://github.com/2908746449/kejian)。界面、课程规则与数据模型为独立实现；参考项目及各自许可记录在参考文档中。
 
 ## 许可证
 

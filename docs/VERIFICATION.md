@@ -1,6 +1,15 @@
 # 验证记录
 
-日期：2026-11-09。版本：0.3.0 开发预览。
+日期：2026-11-09。版本：0.3.1 开发预览。
+
+## v0.3.1 Android 小组件添加入口
+
+- 用户反馈环境为小米 14 Pro / 澎湃 OS 1 / Android 14，症状是小部件列表找不到课间。本轮只连接了专用 Android 模拟器，没有连接该真机。
+- 0.3.0 的已安装 release 包在 Android 13 / API 33 系统 `dumpsys appwidget` 中存在 `dev.kejian.kejian.ScheduleWidget` provider，未复现系统注册丢失。没有据此将 Receiver 的 `exported=false` 判为问题。
+- 根据小米官方小部件适配说明，原生 Android 小组件有单独的「安卓小部件」入口。设置页增加准确路径，以及 Android 8+ 的系统固定请求；Android 7、不支持的桌面或请求失败均保留手动指引。
+- 静态分析、Dart 格式检查、39 项 Flutter 测试通过。新增请求前同步、请求后仍等待确认、不支持桌面的指引、失败重试、不改变课表、iOS 不发送 Android 请求的覆盖。
+- iOS 工程配置检查、Swift 语法和 10 项 Foundation 数据/时间线检查通过；尚未通过本地 iOS SDK 编译。
+- 原生添加集成测试、最终 release 包及 GitHub Actions 的结果在完成后追加；本段不代表已验证小米真机。
 
 ## v0.3 文档识别检查
 

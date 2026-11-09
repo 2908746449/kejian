@@ -21,6 +21,12 @@ Noto Sans SC 来自 [Google Fonts](https://github.com/google/fonts/tree/main/ofl
 
 技术依据为 Flutter 官方文档、依赖包自身 API 和源代码；没有引入其他课程表项目的代码依赖。
 
+## Android 小组件入口
+
+- [Android 固定小组件 API](https://developer.android.com/reference/android/appwidget/AppWidgetManager#requestPinAppWidget(android.content.ComponentName,android.os.Bundle,android.app.PendingIntent))：检查桌面支持后请求固定；返回成功仅代表桌面接受请求，最终添加由用户确认。
+- [Android 小组件注册](https://developer.android.com/develop/ui/views/appwidgets/overview)：保持非导出的 AppWidgetProvider，提供 provider metadata、布局与预览。
+- [小米小部件适配说明](https://dev.mi.com/xiaomihyperos/documentation/detail?pId=1588)：独立的「安卓小部件」入口可从搜索页应用列表底部进入；仅参考官方入口说明，未引入专有小米小部件 SDK。
+
 ## 本地文档识别方案
 
 - [pdfrx](https://github.com/espresso3389/pdfrx)：采用 2.12.0 的 PDFium 文字和坐标提取、扫描页渲染 API。依赖 pdfrx_engine 0.9.1、pdfium_dart 0.4.1；MIT。pdfrx 的 iOS 插件声明最低 15.0。

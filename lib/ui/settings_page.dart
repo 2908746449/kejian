@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/models.dart';
+import '../platform/widget_bridge.dart';
 import 'theme.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -10,6 +11,10 @@ class SettingsPage extends StatelessWidget {
   final bool supportsWidgets;
   final String? widgetError;
   final VoidCallback? onWidgetSync;
+  final bool androidWidgets, addingWidget;
+  final AndroidWidgetStatus? androidWidgetStatus;
+  final String? widgetAddMessage;
+  final VoidCallback? onWidgetAdd;
   const SettingsPage({
     super.key,
     required this.data,
@@ -21,6 +26,11 @@ class SettingsPage extends StatelessWidget {
     this.supportsWidgets = false,
     this.widgetError,
     this.onWidgetSync,
+    this.androidWidgets = false,
+    this.addingWidget = false,
+    this.androidWidgetStatus,
+    this.widgetAddMessage,
+    this.onWidgetAdd,
   });
   @override
   Widget build(BuildContext context) => Column(
@@ -73,10 +83,60 @@ class SettingsPage extends StatelessWidget {
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
-              const Text(
-                '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示下一节课和今日安排，点击小组件可打开 App。',
-                style: TextStyle(color: muted, fontSize: 12, height: 1.8),
+              Text(
+                androidWidgets
+                    ? '显示下一节课和今日安排。点击「添加到桌面」，再在系统弹窗中确认。'
+                    : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示下一节课和今日安排，点击小组件可打开 App。',
+                style: const TextStyle(color: muted, fontSize: 12, height: 1.8),
               ),
+              if (androidWidgets) ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: addingWidget ? null : onWidgetAdd,
+                  icon: const Icon(Icons.add_to_home_screen, size: 18),
+                  label: Text(addingWidget ? '正在请求…' : '添加到桌面'),
+                ),
+                if ((androidWidgetStatus?.installedCount ?? 0) > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      '桌面已添加 ${androidWidgetStatus!.installedCount} 个课间小组件',
+                      style: const TextStyle(color: green, fontSize: 12),
+                    ),
+                  ),
+                if (widgetAddMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      widgetAddMessage!,
+                      style: const TextStyle(
+                        color: green,
+                        fontSize: 12,
+                        height: 1.7,
+                      ),
+                    ),
+                  ),
+                if (androidWidgetStatus?.registered == false)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      '系统暂未识别小组件，请覆盖安装最新版后重新打开课间。',
+                      style: TextStyle(color: Color(0xFFA6614A), fontSize: 12),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                const ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: EdgeInsets.only(bottom: 12),
+                  title: Text('找不到课间？查看手动添加步骤', style: TextStyle(fontSize: 13)),
+                  children: [
+                    Text(
+                      '小米 / 澎湃 OS：\n桌面双指捏合或长按空白处 → 添加小部件 → 右上角搜索 → 滑到应用列表底部 → 安卓小部件 → 课间。\n\n课间位于「安卓小部件」列表；部分系统入口名为「全部应用小部件」。\n\n其他桌面：\n长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。\n\n如果点击按钮没有弹窗，请按上述路径手动添加；Android 7 也请使用手动方式。',
+                      style: TextStyle(color: muted, fontSize: 12, height: 1.8),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 8),
               Text(
                 widgetError ?? '课表修改后会自动同步；实际刷新时间由系统安排。',
@@ -150,7 +210,7 @@ class SettingsPage extends StatelessWidget {
                 Icon(Icons.code, size: 17, color: green),
                 SizedBox(width: 8),
                 Text(
-                  '开源 · MIT · v0.3.0',
+                  '开源 · MIT · v0.3.1',
                   style: TextStyle(color: green, fontSize: 12),
                 ),
               ],
@@ -160,7 +220,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () => showAboutDialog(
                 context: context,
                 applicationName: '课间 Kejian',
-                applicationVersion: '0.3.0',
+                applicationVersion: '0.3.1',
                 applicationLegalese: '© 2026 Kejian contributors · MIT',
                 children: const [
                   Text('功能设计参考 SleepIn 与 XDYou。源码中记录了参考来源；应用界面和核心规则为独立实现。'),

@@ -66,6 +66,9 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   int tab = 0, week = 1;
   bool saving = false, importing = false;
   String? widgetError;
+  AndroidWidgetStatus? androidWidgetStatus;
+  String? widgetAddMessage;
+  bool addingWidget = false;
   Timer? ticker;
   final scroll = ScrollController();
   @override
@@ -91,6 +94,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed && mounted) {
       setState(() {});
       if (data != null) unawaited(syncWidgets(data!));
+      unawaited(refreshWidgetStatus());
     }
   }
 
@@ -102,6 +106,40 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     } catch (_) {
       if (mounted) setState(() => widgetError = '小组件同步失败，点击重新同步。');
       return false;
+    }
+  }
+
+  Future<void> refreshWidgetStatus() async {
+    try {
+      final status = await WidgetBridge.androidStatus();
+      if (mounted) setState(() => androidWidgetStatus = status);
+    } catch (_) {
+      // Status is optional; a launcher query must not affect course storage.
+    }
+  }
+
+  Future<void> addDesktopWidget() async {
+    if (addingWidget || data == null) return;
+    setState(() {
+      addingWidget = true;
+      widgetAddMessage = null;
+    });
+    try {
+      if (!await syncWidgets(data!)) return;
+      final requested = await WidgetBridge.requestPin();
+      if (!mounted) return;
+      setState(() {
+        widgetAddMessage = requested
+            ? '已向桌面请求添加，请在系统弹窗中确认；取消后可再次点击。'
+            : '当前桌面不支持直接添加，请按下方步骤手动添加。';
+      });
+      await refreshWidgetStatus();
+    } catch (_) {
+      if (mounted) {
+        setState(() => widgetAddMessage = '暂时无法请求添加，请按下方步骤手动添加。');
+      }
+    } finally {
+      if (mounted) setState(() => addingWidget = false);
     }
   }
 
@@ -119,6 +157,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
               .clamp(1, value.semester.weekCount);
         });
         unawaited(syncWidgets(value));
+        unawaited(refreshWidgetStatus());
       }
     } catch (_) {
       if (mounted) setState(() => loadError = '暂时无法读取本地课表。原始数据已保留，请重试或检查设备存储。');
@@ -181,6 +220,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   void switchTab(int value) {
     setState(() => tab = value);
     if (scroll.hasClients) scroll.jumpTo(0);
+    if (value == 2) unawaited(refreshWidgetStatus());
   }
 
   Future<void> courseEditor([Course? course]) async {
@@ -625,6 +665,11 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       _ => SettingsPage(
         data: data!,
         supportsWidgets: WidgetBridge.supported,
+        androidWidgets: WidgetBridge.isAndroid,
+        androidWidgetStatus: androidWidgetStatus,
+        addingWidget: addingWidget,
+        widgetAddMessage: widgetAddMessage,
+        onWidgetAdd: addDesktopWidget,
         widgetError: widgetError,
         onWidgetSync: () async {
           if (await syncWidgets(data!)) toast('已请求更新桌面小组件');
@@ -887,7 +932,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         ),
         const SizedBox(height: 10),
         const Text(
-          'KEJIAN  /  OPEN SOURCE  /  0.3',
+          'KEJIAN  /  OPEN SOURCE  /  0.3.1',
           style: TextStyle(fontSize: 8, color: muted, letterSpacing: 1),
         ),
       ],

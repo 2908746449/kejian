@@ -49,6 +49,24 @@ class MainActivity : FlutterActivity() {
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "dev.kejian/widgets")
             .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "status" -> {
+                        try {
+                            result.success(WidgetPinning.status(this))
+                        } catch (_: Exception) {
+                            result.error("WIDGET_STATUS", "暂时无法读取桌面小组件状态。", null)
+                        }
+                        return@setMethodCallHandler
+                    }
+                    "requestPin" -> {
+                        try {
+                            result.success(WidgetPinning.request(this))
+                        } catch (_: Exception) {
+                            result.error("WIDGET_PIN", "桌面暂时无法添加，请按手动步骤添加小组件。", null)
+                        }
+                        return@setMethodCallHandler
+                    }
+                }
                 if (call.method != "sync") {
                     result.notImplemented()
                     return@setMethodCallHandler
