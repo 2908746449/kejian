@@ -49,7 +49,6 @@ struct WidgetSnapshot: Codable {
   }
 
   func state(at now: Date, calendar: Calendar = WidgetDates.calendar) -> WidgetState {
-    let today = WidgetDates.key(now, in: calendar)
     let upcoming = lessons.filter { ($0.ends(in: calendar) ?? .distantPast) > now }
       .sorted { ($0.starts(in: calendar) ?? .distantPast) < ($1.starts(in: calendar) ?? .distantPast) }
     let next = upcoming.first
@@ -58,7 +57,7 @@ struct WidgetSnapshot: Codable {
     let week = Int(floor(Double(days) / 7)) + 1
     let weekLabel = week < 1 ? "学期未开始" : week > weekCount ? "学期已结束" : "第 \(week) 周"
     let active = next.map { ($0.starts(in: calendar) ?? .distantFuture) <= now } ?? false
-    return WidgetState(next: next, today: upcoming.filter { $0.date == today }, weekLabel: weekLabel,
+    return WidgetState(next: next, following: upcoming.dropFirst().first, weekLabel: weekLabel,
       status: next == nil ? "暂无后续课程" : active ? "正在上课" : "下一节课", isDemo: isDemo)
   }
 
@@ -82,11 +81,11 @@ struct WidgetSnapshot: Codable {
 
 struct WidgetState {
   let next: WidgetLesson?
-  let today: [WidgetLesson]
+  let following: WidgetLesson?
   let weekLabel: String
   let status: String
   let isDemo: Bool
-  static let empty = WidgetState(next: nil, today: [], weekLabel: "我的课表", status: "打开课间，同步课表", isDemo: false)
+  static let empty = WidgetState(next: nil, following: nil, weekLabel: "我的课表", status: "打开课间，同步课表", isDemo: false)
 }
 
 enum WidgetStore {

@@ -1,4 +1,5 @@
 import '../domain/models.dart';
+import 'defaults.dart';
 
 ScheduleData demoData(DateTime now) {
   final monday = addDays(dayOnly(now), 1 - now.weekday - 8 * 7);
@@ -32,18 +33,7 @@ ScheduleData demoData(DateTime now) {
       name: '${now.year} · ${now.month >= 7 ? '秋季' : '春季'}学期',
       firstMonday: monday,
       weekCount: 20,
-      periods: const [
-        Period(1, '08:00', '08:45'),
-        Period(2, '08:55', '09:40'),
-        Period(3, '10:00', '10:45'),
-        Period(4, '10:55', '11:40'),
-        Period(5, '14:00', '14:45'),
-        Period(6, '14:55', '15:40'),
-        Period(7, '16:00', '16:45'),
-        Period(8, '16:55', '17:40'),
-        Period(9, '19:00', '19:45'),
-        Period(10, '19:55', '20:40'),
-      ],
+      periods: kailiUniversityPeriods,
     ),
     courses: [
       c('math', '高等数学', '陈老师', 0, [

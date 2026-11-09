@@ -9,6 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'data/demo.dart';
+import 'data/defaults.dart';
 import 'data/importer.dart';
 import 'data/document_recognizer.dart';
 import 'data/timetable_recognition.dart';
@@ -147,8 +148,10 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     setState(() => loadError = null);
     try {
       final stored = await widget.repository.load();
-      final value = stored ?? demoData(widget.clock());
-      if (stored == null) await widget.repository.save(value);
+      final value = stored == null
+          ? demoData(widget.clock())
+          : upgradeScheduleDefaults(stored);
+      if (!identical(value, stored)) await widget.repository.save(value);
       if (mounted) {
         setState(() {
           data = value;
@@ -450,6 +453,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       final isBackup = file.name.toLowerCase().endsWith('.json');
       final imported = isBackup
           ? ScheduleData.decode(source)
+                .copyWith(defaultsVersion: currentDefaultsVersion)
           : ScheduleData(
               semester: data!.semester,
               courses: coursesFromCsv(source, data!.semester),

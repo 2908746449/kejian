@@ -29,6 +29,19 @@ struct WidgetSnapshotCheck {
       _ = try WidgetSnapshot.decode(Data(bad.utf8))
       fatalError("Unsupported snapshot version accepted")
     } catch {}
-    print("10 native widget data/timeline checks passed (Foundation; not an iOS UI build).")
+    let first = WidgetLesson(id: "first", name: "第一门", room: "A101", date: "2026-11-09", start: "08:20", end: "09:55", changed: false)
+    let second = WidgetLesson(id: "second", name: "第二门", room: "A102", date: "2026-11-09", start: "14:00", end: "15:35", changed: true)
+    let tomorrow = WidgetLesson(id: "tomorrow", name: "明天的课", room: "A103", date: "2026-11-10", start: "08:20", end: "09:55", changed: false)
+    let pair = WidgetSnapshot(version: 1, semesterName: "测试", firstMonday: "2026-11-09", weekCount: 1, isDemo: false, lessons: [tomorrow, second, first])
+    let firstState = pair.state(at: first.starts(in: calendar)!, calendar: calendar)
+    precondition(firstState.next?.id == "first" && firstState.following?.id == "second", "Two classes in chronological order")
+    let afterFirst = pair.state(at: first.ends(in: calendar)!, calendar: calendar)
+    precondition(afterFirst.next?.id == "second" && afterFirst.following?.id == "tomorrow", "End boundary rolls both cards and includes the next day")
+    let afterSecond = pair.state(at: second.ends(in: calendar)!, calendar: calendar)
+    precondition(afterSecond.next?.id == "tomorrow" && afterSecond.following == nil, "Single remaining class is not duplicated")
+    let afterAll = pair.state(at: tomorrow.ends(in: calendar)!, calendar: calendar)
+    precondition(afterAll.next == nil && afterAll.following == nil, "No ended lessons in either card")
+    precondition(afterFirst.following?.date == "2026-11-10" && afterFirst.next?.changed == true, "Cross-date and moved lesson metadata retained")
+    print("15 native widget data/timeline checks passed (Foundation; not an iOS UI build).")
   }
 }

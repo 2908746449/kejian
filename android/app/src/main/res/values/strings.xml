@@ -1,3 +1,3 @@
 <resources>
-    <string name="widget_description">课间：下一节课与今日安排，支持停课、调课和教室变更。</string>
+    <string name="widget_description">课间：接下来的两门课，显示时间、教室及停课调课变更。</string>
 </resources>

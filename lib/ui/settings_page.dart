@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/defaults.dart';
 import '../domain/models.dart';
 import '../platform/widget_bridge.dart';
 import 'theme.dart';
@@ -55,7 +56,7 @@ class SettingsPage extends StatelessWidget {
               leading: const Icon(Icons.calendar_month_outlined, color: green),
               title: Text(data.semester.name),
               subtitle: Text(
-                '第一教学周：${dateKey(data.semester.firstMonday)} 起\n共 ${data.semester.weekCount} 周 · 每天 ${data.semester.periods.length} 节',
+                '第一教学周：${dateKey(data.semester.firstMonday)} 起\n共 ${data.semester.weekCount} 周 · ${usesKailiUniversityPeriods(data.semester.periods) ? '凯里学院作息' : '每天 ${data.semester.periods.length} 节'}',
               ),
               isThreeLine: true,
               trailing: const Icon(Icons.chevron_right),
@@ -84,9 +85,7 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                androidWidgets
-                    ? '显示下一节课和今日安排。点击「添加到桌面」，再在系统弹窗中确认。'
-                    : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示下一节课和今日安排，点击小组件可打开 App。',
+                androidWidgets ? '显示接下来的两门课及时间、教室。点击「添加到桌面」，再在系统弹窗中确认。' : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示接下来的两门课及时间、教室，点击小组件可打开 App。',
                 style: const TextStyle(color: muted, fontSize: 12, height: 1.8),
               ),
               if (androidWidgets) ...[
@@ -210,7 +209,7 @@ class SettingsPage extends StatelessWidget {
                 Icon(Icons.code, size: 17, color: green),
                 SizedBox(width: 8),
                 Text(
-                  '开源 · MIT · v0.3.1',
+                  '开源 · MIT · v0.3.2',
                   style: TextStyle(color: green, fontSize: 12),
                 ),
               ],
@@ -220,7 +219,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () => showAboutDialog(
                 context: context,
                 applicationName: '课间 Kejian',
-                applicationVersion: '0.3.1',
+                applicationVersion: '0.3.2',
                 applicationLegalese: '© 2026 Kejian contributors · MIT',
                 children: const [
                   Text('功能设计参考 SleepIn 与 XDYou。源码中记录了参考来源；应用界面和核心规则为独立实现。'),
@@ -318,6 +317,27 @@ class _SemesterEditorState extends State<_SemesterEditor> {
     }
   }
 
+  void useKailiUniversityPeriods() {
+    setState(() {
+      for (final controller in [...starts, ...ends]) {
+        controller.dispose();
+      }
+      starts
+        ..clear()
+        ..addAll(
+          kailiUniversityPeriods.map(
+            (p) => TextEditingController(text: p.start),
+          ),
+        );
+      ends
+        ..clear()
+        ..addAll(
+          kailiUniversityPeriods.map((p) => TextEditingController(text: p.end)),
+        );
+      error = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Dialog(
     insetPadding: const EdgeInsets.all(16),
@@ -396,6 +416,12 @@ class _SemesterEditorState extends State<_SemesterEditor> {
                   const Text(
                     '使用 24 小时制，例如 08:00。新增节次的时间为参考值，请按学校作息修改。',
                     style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: useKailiUniversityPeriods,
+                    icon: const Icon(Icons.schedule, size: 17),
+                    label: const Text('使用凯里学院作息'),
                   ),
                   const SizedBox(height: 14),
                   for (var i = 0; i < starts.length; i++)

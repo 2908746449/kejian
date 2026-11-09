@@ -48,6 +48,7 @@ class ScheduleWidget : AppWidgetProvider() {
             val snapshot = readSnapshot(context)
             val upcoming = snapshot?.lessons?.filter { it.end > now }.orEmpty()
             val next = upcoming.firstOrNull()
+            val following = upcoming.getOrNull(1)
             val today = format("yyyy-MM-dd", now)
             val week = snapshot?.weekLabel(today) ?: "添加你的课程"
             for (id in ids) {
@@ -61,28 +62,23 @@ class ScheduleWidget : AppWidgetProvider() {
                     else -> "下一节课"
                 })
                 views.setTextViewText(R.id.widget_name, next?.name ?: "享受一段自由时光")
-                val whenText = next?.let {
-                    val day = if (it.date == today) "今天" else format("M/d", it.start)
-                    "$day ${format("HH:mm", it.start)}—${format("HH:mm", it.end)}"
-                } ?: "点击打开课间"
+                val whenText = next?.let { timeLabel(it, today) } ?: "点击打开课间"
                 views.setTextViewText(R.id.widget_time, whenText)
                 views.setTextViewText(R.id.widget_room, next?.let {
                     (if (it.room.isEmpty()) "教室待补充" else it.room) + if (it.changed) " · 已调课" else ""
                 } ?: "好好上课，也好好生活。")
-                val rows = upcoming.filter { it.date == today && it !== next }.take(2)
-                views.setViewVisibility(R.id.widget_rows,
-                    if (manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT) >= 180 && rows.isNotEmpty()) View.VISIBLE else View.GONE)
-                for ((index, rowId) in listOf(R.id.widget_row_one, R.id.widget_row_two).withIndex()) {
-                    views.setViewVisibility(rowId, if (index < rows.size) View.VISIBLE else View.GONE)
-                    rows.getOrNull(index)?.let {
-                        views.setTextViewText(rowId, "${format("HH:mm", it.start)}  ${it.name} · ${it.room.ifEmpty { "教室待补充" }}")
-                    }
-                }
+                views.setViewVisibility(R.id.widget_second, if (next != null) View.VISIBLE else View.GONE)
+                views.setTextViewText(R.id.widget_second_name, following?.name ?: "暂无后续课程")
+                views.setTextViewText(R.id.widget_second_time, following?.let { timeLabel(it, today) } ?: "点击打开课间")
+                views.setTextViewText(R.id.widget_second_room, following?.let {
+                    (it.room.ifEmpty { "教室待补充" }) + if (it.changed) " · 已调课" else ""
+                }.orEmpty())
                 val open = PendingIntent.getActivity(context, 0,
                     Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
                 views.setOnClickPendingIntent(R.id.widget_root, open)
-                views.setContentDescription(R.id.widget_root, "课间，$week，${next?.name.orEmpty()}，$whenText，${next?.room.orEmpty()}。点击打开应用")
+                val followingText = following?.let { "；再下一节，${it.name}，${timeLabel(it, today)}，${it.room}" }.orEmpty()
+                views.setContentDescription(R.id.widget_root, "课间，$week，${next?.name.orEmpty()}，$whenText，${next?.room.orEmpty()}$followingText。点击打开应用")
                 manager.updateAppWidget(id, views)
             }
             // Inexact alarms require no exact-alarm permission. The launcher/OS may
@@ -109,6 +105,11 @@ class ScheduleWidget : AppWidgetProvider() {
 
         private fun format(pattern: String, milliseconds: Long) =
             SimpleDateFormat(pattern, Locale.CHINA).format(Date(milliseconds))
+
+        private fun timeLabel(lesson: WidgetLesson, today: String): String {
+            val day = if (lesson.date == today) "今天" else format("M/d", lesson.start)
+            return "$day ${format("HH:mm", lesson.start)}—${format("HH:mm", lesson.end)}"
+        }
     }
 }
 

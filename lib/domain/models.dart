@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+const currentDefaultsVersion = 2;
+
 DateTime dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 String dateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
@@ -183,12 +185,14 @@ class ScheduleData {
   final List<Course> courses;
   final List<LessonException> exceptions;
   final bool isDemo, showWeekends;
+  final int defaultsVersion;
   const ScheduleData({
     required this.semester,
     required this.courses,
     this.exceptions = const [],
     this.isDemo = false,
     this.showWeekends = true,
+    this.defaultsVersion = currentDefaultsVersion,
   });
   ScheduleData copyWith({
     Semester? semester,
@@ -196,15 +200,18 @@ class ScheduleData {
     List<LessonException>? exceptions,
     bool? isDemo,
     bool? showWeekends,
+    int? defaultsVersion,
   }) => ScheduleData(
     semester: semester ?? this.semester,
     courses: courses ?? this.courses,
     exceptions: exceptions ?? this.exceptions,
     isDemo: isDemo ?? this.isDemo,
     showWeekends: showWeekends ?? this.showWeekends,
+    defaultsVersion: defaultsVersion ?? this.defaultsVersion,
   );
   Map<String, dynamic> toJson() => {
     'schemaVersion': 1,
+    'defaultsVersion': defaultsVersion,
     'semester': semester.toJson(),
     'courses': courses.map((c) => c.toJson()).toList(),
     'exceptions': exceptions.map((e) => e.toJson()).toList(),
@@ -230,6 +237,7 @@ class ScheduleData {
             .toList(),
         isDemo: json['isDemo'] as bool? ?? false,
         showWeekends: json['showWeekends'] as bool? ?? true,
+        defaultsVersion: json['defaultsVersion'] as int? ?? 1,
       );
       result.validate();
       return result;

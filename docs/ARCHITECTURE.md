@@ -8,6 +8,7 @@ lib/
   domain/widget_snapshot.dart  完整学期的小组件快照
   platform/widget_bridge.dart  原生共享数据通道
   data/demo.dart           带明确标记的示例课表
+  data/defaults.dart       凯里学院作息预设与旧默认作息迁移
   data/importer.dart       CSV 解析与导入规则
   data/document_recognizer.dart  PDF 文字提取、扫描页渲染与 OCR 协调
   data/timetable_recognition.dart  坐标表格解析、周次与课程合并
@@ -38,7 +39,9 @@ Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理
 
 ## 备份版本 1
 
-顶层：`schemaVersion`, `semester`, `courses`, `exceptions`, `isDemo`, `showWeekends`。
+顶层：`schemaVersion`, `defaultsVersion`, `semester`, `courses`, `exceptions`, `isDemo`, `showWeekends`。
+
+`defaultsVersion` 缺省为 1，新文档为 2。首次打开旧文档时，只将完整匹配原 10 节默认钟点的作息升级为凯里学院作息，并标记版本；自定义作息、课程与单次变更保持原值。手动 JSON 恢复保留备份作息并记录已处理版本，避免下一次启动改变刚恢复的数据。备份结构版本仍为 1，旧版可忽略新增字段。
 
 - `semester`：name、firstMonday（YYYY-MM-DD）、weekCount、periods（number/start/end）。
 - `courses`：id、name、teacher、note、color（0—5）、meetings。
@@ -58,6 +61,8 @@ Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理
 ## 小组件
 
 App 成功保存主文档后，把规则引擎展开的完整学期快照传给原生端。Android SharedPreferences 与 iOS App Group 原子文件作为只读副本；小组件自行按当前本地时间筛选下一节与当天安排。同步失败单独提示，不回滚已保存主文档。刷新、时间线与部署设置见 `MOBILE.md`。
+
+0.3.2 起，小组件展示完整快照中按开始时间排序、结束时间晚于当前时刻的前两门课；可跨日期顺延。共享快照结构保持版本 1，原生展示只取两个条目，时间线仍覆盖完整学期。
 
 ## PDF 与图片
 

@@ -2,7 +2,7 @@
 
 一个留白多一点的开源大学课程表。手机优先，免登录，课表由你掌握。
 
-当前版本：**0.3.1 开发预览**。Flutter 3.47.9 / Dart 3.13.7。Android arm64 APK 已完成构建和模拟器验证；iOS App 与 WidgetKit 扩展最低版本为 15.0，已通过云端 Xcode 的模拟器与 iPhoneOS Release 编译，提供供已有 TrollStore 的设备安装的 IPA，尚待真机运行验证。Web 可直接预览。详细状态见 `docs/VERIFICATION.md`。
+当前版本：**0.3.2 开发预览**。默认采用凯里学院作息，Android / iOS 桌面小组件显示接下来的两门课。Flutter 3.47.9 / Dart 3.13.7；iOS App 与 WidgetKit 最低版本为 15.0，已有 TrollStore 的设备可安装真机 IPA。各版本的构建和设备验证状态见 `docs/VERIFICATION.md`。
 
 [下载 Android / iOS 安装包](https://github.com/2908746449/kejian/releases) · [报告问题](https://github.com/2908746449/kejian/issues)
 
@@ -15,6 +15,8 @@
 - 单次停课、跨周调课、临时换教室、撤销变更。
 - 冲突提示与并排显示，重叠课程仍可点击。
 - 自定义学期起始日、教学周数和每节课的起止时间；每天可配置 1—16 节。
+- 默认凯里学院作息：上午 08:20–11:45、下午 14:00–17:25、晚课 19:00 开始；设置中可一键填入或继续自定义，升级时迁移原有默认作息。
+- 两端桌面小组件显示接下来的两门课，跨日期接续，展示起止时间、教室和调课状态。
 - PDF、PNG/JPG/WebP 课表本地识别，导入前逐门核对和编辑，保留原文与待安排课程。
 - UTF-8 CSV 模板导入，支持预览、追加或替换。
 - JSON 完整备份和恢复，包含课程、作息、设置和单次变更。
@@ -41,7 +43,7 @@ flutter build apk --release --target-platform android-arm64
 
 Android 当前使用开发包标识 `dev.kejian.kejian`。正式发布前需确定包名、配置自己的签名，不能将模板内的 debug 签名配置用作正式发行方案。
 
-iOS App 与 Widget 扩展均设置最低 iOS 15.0。已有可用 TrollStore 的设备可下载 `kejian-ios-trollstore-v0.3.1.ipa`，包含小、中、大 WidgetKit 扩展与共享 App Group。iOS 15.6.1 在支持范围内；安装后先启动主 App，再添加桌面小组件。常规 Apple 签名分发仍需完整 Xcode、开发团队和注册的 App Group。配置、构建和添加小组件的方法见 [移动端与小组件说明](docs/MOBILE.md)。
+iOS App 与 Widget 扩展均设置最低 iOS 15.0。已有可用 TrollStore 的设备可下载 `kejian-ios-trollstore-v0.3.2.ipa`，包含小、中、大 WidgetKit 扩展与共享 App Group。iOS 15.6.1 在支持范围内；安装后先启动主 App，再添加桌面小组件。常规 Apple 签名分发仍需完整 Xcode、开发团队和注册的 App Group。配置、构建和添加小组件的方法见 [移动端与小组件说明](docs/MOBILE.md)。
 
 中国大陆网络可按需使用 Flutter 官方文档列出的镜像环境：
 
@@ -68,7 +70,7 @@ flutter analyze
 flutter test
 ```
 
-39 项 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败、添加请求和失败重试。原生共享数据与时间线另有 10 项 Swift Foundation 检查；它们不能替代 iOS UI 编译与设备验证。
+44 项 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败、添加请求、默认作息迁移与预设取消/保存。原生共享数据与时间线另有 15 项 Swift Foundation 检查，包括两门课排序、跨日期接续和结束边界；它们不能替代 iOS UI 编译与设备验证。
 
 示例文件在 `examples/`；可运行 `dart run tool/generate_examples.dart` 重新生成。当前示例固定采用 2026 年秋季学期，仅用于演示和测试。
 
@@ -77,6 +79,7 @@ flutter test
 - [产品范围与后续路线](docs/PRODUCT.md)
 - [PDF / 图片识别导入](docs/IMPORT.md)
 - [Android / iOS 15 与小组件](docs/MOBILE.md)
+- [凯里学院作息、升级与两门课小组件](docs/TIMETABLE_DEFAULTS.md)
 - [架构、规则与备份格式](docs/ARCHITECTURE.md)
 - [测试和平台验证记录](docs/VERIFICATION.md)
 - [GitHub 参考与第三方素材](docs/REFERENCES.md)
