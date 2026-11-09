@@ -1,6 +1,6 @@
 # PDF / 图片课表导入
 
-版本 0.3.0，2026-11-09。
+版本 0.3.1，2026-11-09。
 
 在「课程 → 导入课表」选择 PDF、PNG、JPG/JPEG 或 WebP。文件在当前设备解析，不上传原件；文字 PDF 优先提取原文字，扫描 PDF 和图片使用本地 OCR。CSV / JSON 导入继续保留。
 
@@ -28,7 +28,7 @@
 | 平台 | PDF | 图片 / 扫描页 | 当前验证 |
 | --- | --- | --- | --- |
 | Android 7+ | pdfrx / PDFium | ML Kit 中文 bundled SDK | Android 13 模拟器真实通道通过 |
-| iOS 15+ | pdfrx / PDFium | 系统 Vision | 已实现，未通过 Xcode 编译和运行验证 |
+| iOS 15+ | pdfrx / PDFium | 系统 Vision | App 与扩展已通过云端 Xcode 模拟器编译，识别运行仍待真机验证 |
 | Web | PDFium WASM | Tesseract.js / WASM 中文模型 | 浏览器路径单独验证，见 VERIFICATION.md |
 
 Web 的 OCR worker、WASM、模型与 PDFium 随站点打包，从当前站点加载，不依赖识别云服务；站点初次加载仍需网络，当前没有离线 PWA 启动保证。Android 使用预打包中文模型；ML Kit SDK 自身条款见第三方声明。

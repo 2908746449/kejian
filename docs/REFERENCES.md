@@ -34,6 +34,6 @@ Noto Sans SC 来自 [Google Fonts](https://github.com/google/fonts/tree/main/ofl
 - [Tesseract.js](https://github.com/naptha/tesseract.js) 与 [tesseract.js-core](https://github.com/naptha/tesseract.js-core)：采用各自 7.0.0 的本地 worker / WASM，保留 Apache-2.0 与压缩包附带声明。浏览器不将课表上传到识别服务。
 - [naptha/tessdata](https://github.com/naptha/tessdata) / [tessdata_best](https://github.com/tesseract-ocr/tessdata_best)：中文模型来自 npm `@tesseract.js-data/chi_sim@1.0.0` 的 `4.0.0_best_int`，仅使用中文模型（包含数字和 ASCII）；模型上游 Apache-2.0，包元数据 MIT，来源区别见第三方声明。
 - [Android 中文文字识别](https://developers.google.com/ml-kit/vision/text-recognition/v2/android)：使用 `com.google.mlkit:text-recognition-chinese:16.0.1` 预打包模型，实际读取 symbol 坐标。ML Kit 是 Google 的专有 SDK，不列为开源库。
-- [Apple Vision](https://developer.apple.com/documentation/vision/vnrecognizetextrequest)：使用 iOS 系统中文/英文文字识别与字符包围框，未引入需要更高最低 iOS 的第三方 OCR 插件。iOS 代码尚需完整 Xcode 编译和真机验证。
+- [Apple Vision](https://developer.apple.com/documentation/vision/vnrecognizetextrequest)：使用 iOS 系统中文/英文文字识别与字符包围框，未引入需要更高最低 iOS 的第三方 OCR 插件。App 与扩展已通过云端完整 Xcode 模拟器编译，识别运行仍需真机验证。
 
 参考的是「本地引擎提取文字和坐标 → 表格解析 → 人工核对」的处理流程。课表布局解析器、格线预处理、课程合并和核对页为本项目实现，没有复制其他课程表项目的识别代码。更多分发信息见 `THIRD_PARTY_NOTICES.md`。
