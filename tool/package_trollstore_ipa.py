@@ -33,7 +33,10 @@ def read_plist(path: Path) -> dict:
 
 def macho_details(path: Path) -> dict | None:
     with path.open("rb") as file:
-        if file.read(4) != MACHO64:
+        magic = file.read(4)
+        if magic in (b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"):
+            raise ValueError(f"Expected a thin arm64 device binary: {path}")
+        if magic != MACHO64:
             return None
         header = file.read(28)
         cpu, _, _, command_count, _, _, _ = struct.unpack("<7I", header)
@@ -53,6 +56,66 @@ def macho_details(path: Path) -> dict | None:
             raise ValueError(f"Binary requires a system newer than iOS 15.0: {path}")
         version = f"{minimum >> 16}.{(minimum >> 8) & 255}.{minimum & 255}"
         return {"architecture": "arm64", "platform": "iPhoneOS", "minimumOS": version}
+
+
+def verify_fake_signature(path: Path) -> dict:
+    """Check CodeDirectory page hashes without requiring an Apple CMS signature.
+
+    ldid's fake signature contains CodeDirectories and optional entitlements;
+    TrollStore supplies the installation signature later. macOS codesign
+    --verify rejects the absent CMS wrapper even when these hashes are valid.
+    """
+    data = path.read_bytes()
+    command_count = struct.unpack_from("<I", data, 16)[0]
+    offset = 32
+    signature = None
+    for _ in range(command_count):
+        command, size = struct.unpack_from("<2I", data, offset)
+        if command == 0x1D:  # LC_CODE_SIGNATURE
+            start, length = struct.unpack_from("<2I", data, offset + 8)
+            signature = data[start:start + length]
+        offset += size
+    if not signature:
+        raise ValueError(f"Missing embedded signature: {path}")
+    magic, length, count = struct.unpack_from(">3I", signature)
+    if magic != 0xFADE0CC0 or length > len(signature):
+        raise ValueError(f"Invalid embedded signature SuperBlob: {path}")
+    blobs = {}
+    for index in range(count):
+        slot, position = struct.unpack_from(">2I", signature, 12 + index * 8)
+        _, blob_length = struct.unpack_from(">2I", signature, position)
+        blobs[slot] = signature[position:position + blob_length]
+    verified = []
+    for slot, directory in blobs.items():
+        if struct.unpack_from(">I", directory)[0] != 0xFADE0C02:
+            continue
+        _, _, _, _, hash_offset, _, special_count, page_count, code_limit = struct.unpack_from(">9I", directory)
+        hash_size, hash_type, _, page_shift = struct.unpack_from(">4B", directory, 36)
+        algorithms = {1: "sha1", 2: "sha256"}
+        if hash_type not in algorithms:
+            raise ValueError(f"Unexpected signature hash type {hash_type}: {path}")
+        algorithm = algorithms[hash_type]
+        page_size = 1 << page_shift
+        if page_count != (code_limit + page_size - 1) // page_size:
+            raise ValueError(f"Invalid signature page count: {path}")
+        for page in range(page_count):
+            chunk = data[page * page_size:min((page + 1) * page_size, code_limit)]
+            actual = hashlib.new(algorithm, chunk).digest()
+            expected = directory[hash_offset + page * hash_size:hash_offset + (page + 1) * hash_size]
+            if actual != expected:
+                raise ValueError(f"CodeDirectory page hash mismatch: {path}, page {page}")
+        for entitlement_slot in (5, 7):  # XML and DER entitlements.
+            if entitlement_slot not in blobs:
+                continue
+            if special_count < entitlement_slot:
+                raise ValueError(f"Entitlements missing from signature hash table: {path}")
+            expected = directory[hash_offset - entitlement_slot * hash_size:hash_offset - (entitlement_slot - 1) * hash_size]
+            if hashlib.new(algorithm, blobs[entitlement_slot]).digest() != expected:
+                raise ValueError(f"Entitlement signature hash mismatch: {path}")
+        verified.append(algorithm)
+    if "sha256" not in verified:
+        raise ValueError(f"Missing SHA-256 CodeDirectory: {path}")
+    return {"signature": "ldid-fake", "verifiedCodeHashes": verified}
 
 
 def validate_bundle(app: Path, version: str, build: str) -> None:
@@ -107,11 +170,14 @@ def sign_bundle(app: Path, temp: Path) -> list[dict]:
         signed = plistlib.loads(subprocess.check_output(["ldid", "-e", str(executable)]))
         if signed != values:
             raise ValueError(f"Signed entitlements did not match for {identifier}")
-        subprocess.run(["codesign", "--verify", str(executable)], check=True)
     if not any(item["path"] == "Runner" for item in binaries):
         raise ValueError("App executable is missing or not Mach-O")
     if not any(item["path"] == "PlugIns/ScheduleWidget.appex/ScheduleWidget" for item in binaries):
         raise ValueError("Widget executable is missing or not Mach-O")
+    for binary in binaries:
+        path = app / binary["path"]
+        binary.update(verify_fake_signature(path))
+        binary["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     return binaries
 
 
@@ -147,6 +213,7 @@ def main() -> None:
         "build": build,
         "minimumOS": "15.0",
         "appGroup": GROUP,
+        "buildCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=PROJECT, text=True).strip(),
         "binaries": binaries,
         "installation": "Open in an existing TrollStore installation",
         "deviceVerified": False,
