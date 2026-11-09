@@ -27,7 +27,7 @@ flutter build apk --release --target-platform android-arm64
 
 `Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。同一 WidgetKit 扩展通过 WidgetBundle 注册「课间 · 原版」与「课间 · 宽版」；原版保留小、中、大三种主屏幕尺寸，宽版仅支持横向中尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
 
-本机缺少完整 Xcode。0.3.1 已在 GitHub Actions 使用完整 Xcode 完成 App 和 WidgetKit 扩展的[模拟器编译](https://github.com/2908746449/kejian/actions/runs/42566023283)，以及 [iPhoneOS Release 与 TrollStore IPA 打包](https://github.com/2908746449/kejian/actions/runs/42580413334)。两个产物分别提供，iPhone 使用 `kejian-ios-trollstore-v0.3.1.ipa`。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
+本机缺少完整 Xcode。0.3.2 已在 GitHub Actions 使用完整 Xcode 完成 App、包含两个小组件入口的 WidgetKit 扩展的 [iPhoneOS Release 编译与 TrollStore IPA 打包](https://github.com/2908746449/kejian/actions/runs/42647389856)。iPhone 使用 `kejian-ios-trollstore-v0.3.2.ipa`。此前 0.3.1 的[模拟器编译产物](https://github.com/2908746449/kejian/actions/runs/42566023283) 仍供开发者参考。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
 
 使用 Apple 开发团队签名时，在有完整 Xcode 的 Mac 上：
 

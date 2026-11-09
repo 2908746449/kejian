@@ -7,7 +7,14 @@
 - 默认时间依据用户提供的 08:20/11:45、14:00/17:25、19:00，以及 5/15 分钟休息推算为每节 45 分钟；晚课沿用两节至 20:35。完整钟点记录在 `TIMETABLE_DEFAULTS.md`，未冒称学校官方作息。
 - Flutter 静态分析、45 项测试通过，新增默认时间边界、旧文档一次迁移、课程/停课/设置保留、自定义不覆盖、迁移后小组件通道的实际时间、预设取消/保存，以及原版/宽版独立添加请求验证。
 - iOS 工程检查与 Swift 语法检查通过；15 项 Foundation 时间线检查通过，新增两门课排序、跨日期接续、结束边界滚动、不重复末节和调课信息保留。
-- 两端提供原版与宽版两个独立入口：原版保留旧尺寸并上下显示，宽版左右显示。Android 保留旧 provider，iOS 保留旧 kind，避免改变已有桌面实例的身份。实际平台构建与安装结果在验证完成后补充。
+- 两端提供原版与宽版两个独立入口：原版保留旧尺寸并上下显示，宽版左右显示。Android 保留旧 provider，iOS 保留旧 kind，避免改变已有桌面实例的身份。
+- Android 最终 Release arm64 包为 0.3.2 / 5，minSdk 24 / targetSdk 36；沿用旧开发证书（SHA-256 `7bc3ca8e1f29478f9852ec5c8cb34d9aef9f197795b1fb8a790c38599bb03c2a`），签名验证、覆盖安装和启动通过。不是商店发行签名。
+- 在专用 Android 13 / API 33 模拟器观察旧桌面原版实例继续更新，课名、时间、教室完整。设置页独立添加宽版成功，两种 provider 同时绑定，已添加数量合计读取通过；非精确刷新 Alarm 仍在，检查时无崩溃或 RemoteViews 布局异常。
+- 宽版首次实现曾在 Pixel Launcher 被识别为 4×3；已修正为目标 4×2、备用最小宽高 250×110dp，并仅允许横向缩放。重新覆盖安装后实际系统确认面板显示「4 × 2」，新添加的宽版为横向长方形，两门课左右并排。iOS 宽版仅支持横向 systemMedium，原版尺寸不变。
+- Web Release 构建与 [最终应用提交的 Check 流程](https://github.com/2908746449/kejian/actions/runs/42647388972) 通过。
+- [最终 iPhoneOS 构建与 IPA 打包任务](https://github.com/2908746449/kejian/actions/runs/42647389856) 通过，应用源码提交为 `6ae27d91e7acd9a7e635ee06e18b72d7dbb2e615`。Runner、包含原版/宽版 WidgetBundle 的扩展均由完整 Xcode 编译；主 App 使用 `reloadAllTimelines` 同时刷新两个 kind。
+- 下载最终 IPA 后再次核对 0.3.2 / 5、最低 iOS 15.0、Payload 结构、两个 widget kind、App/扩展的共享组权限及全部 7 个 arm64 iPhoneOS Mach-O；独立重算所有代码页与权限哈希并与报告逐项比对。IPA SHA-256 为 `9665c3b192a742e2a6f6c8123ecd192d16d7b31a14679f031343e2cff929c5c6`。
+- iOS 15.6.1 真机安装、App Group 实际读写和各尺寸布局仍待设备验收；本轮未连接小米 14 Pro 或 iPhone 真机。
 
 ## v0.3.1 iPhone 真机编译与 TrollStore IPA
 
