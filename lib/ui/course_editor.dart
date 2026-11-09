@@ -280,7 +280,7 @@ class _CourseEditorState extends State<CourseEditor> {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
-            if (meetings.length > 1)
+            if (meetings.isNotEmpty)
               IconButton(
                 tooltip: '删除这组安排',
                 onPressed: () => setState(() {

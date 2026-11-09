@@ -150,7 +150,7 @@ class SettingsPage extends StatelessWidget {
                 Icon(Icons.code, size: 17, color: green),
                 SizedBox(width: 8),
                 Text(
-                  '开源 · MIT · v0.2.0',
+                  '开源 · MIT · v0.3.0',
                   style: TextStyle(color: green, fontSize: 12),
                 ),
               ],
@@ -160,7 +160,7 @@ class SettingsPage extends StatelessWidget {
               onPressed: () => showAboutDialog(
                 context: context,
                 applicationName: '课间 Kejian',
-                applicationVersion: '0.2.0',
+                applicationVersion: '0.3.0',
                 applicationLegalese: '© 2026 Kejian contributors · MIT',
                 children: const [
                   Text('功能设计参考 SleepIn 与 XDYou。源码中记录了参考来源；应用界面和核心规则为独立实现。'),
@@ -235,6 +235,24 @@ class _SemesterEditorState extends State<_SemesterEditor> {
       );
       ScheduleData(semester: s, courses: []).validate();
       Navigator.pop(context, s);
+    } on FormatException catch (e) {
+      setState(() => error = e.message);
+    }
+  }
+
+  void addPeriod() {
+    try {
+      final start = timeMinutes(ends.last.text.trim()) + 10;
+      if (start + 45 >= 24 * 60) {
+        throw const FormatException('新增节次超出当天，请先调整最后一节的时间。');
+      }
+      String time(int n) =>
+          '${(n ~/ 60).toString().padLeft(2, '0')}:${(n % 60).toString().padLeft(2, '0')}';
+      setState(() {
+        starts.add(TextEditingController(text: time(start)));
+        ends.add(TextEditingController(text: time(start + 45)));
+        error = null;
+      });
     } on FormatException catch (e) {
       setState(() => error = e.message);
     }
@@ -316,7 +334,7 @@ class _SemesterEditorState extends State<_SemesterEditor> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '使用 24 小时制，例如 08:00。时间需依次排列。',
+                    '使用 24 小时制，例如 08:00。新增节次的时间为参考值，请按学校作息修改。',
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
                   const SizedBox(height: 14),
@@ -357,6 +375,26 @@ class _SemesterEditorState extends State<_SemesterEditor> {
                         ],
                       ),
                     ),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      if (starts.length < 16)
+                        TextButton.icon(
+                          onPressed: addPeriod,
+                          icon: const Icon(Icons.add, size: 17),
+                          label: const Text('增加一节'),
+                        ),
+                      if (starts.length > 1)
+                        TextButton.icon(
+                          onPressed: () => setState(() {
+                            starts.removeLast().dispose();
+                            ends.removeLast().dispose();
+                          }),
+                          icon: const Icon(Icons.remove, size: 17),
+                          label: const Text('移除最后一节'),
+                        ),
+                    ],
+                  ),
                   if (error != null)
                     Text(error!, style: const TextStyle(color: Colors.red)),
                 ],

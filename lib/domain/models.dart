@@ -276,7 +276,6 @@ class ScheduleData {
           c.note.length > 4000 ||
           c.color < 0 ||
           c.color > 5 ||
-          c.meetings.isEmpty ||
           c.meetings.length > 30) {
         throw const FormatException('课程名称、标识或安排不合法');
       }

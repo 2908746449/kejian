@@ -9,6 +9,10 @@ lib/
   platform/widget_bridge.dart  原生共享数据通道
   data/demo.dart           带明确标记的示例课表
   data/importer.dart       CSV 解析与导入规则
+  data/document_recognizer.dart  PDF 文字提取、扫描页渲染与 OCR 协调
+  data/timetable_recognition.dart  坐标表格解析、周次与课程合并
+  data/table_grid.dart     格线检测与去线
+  platform/ocr*.dart       原生通道 / Web Tesseract bridge
   data/repository.dart     SQLite / Web 存储接口
   ui/                     课表、课程编辑、详情、调课、设置
   main.dart               应用状态与操作协调
@@ -16,7 +20,7 @@ lib/
 
 ## 规则
 
-`Course` 描述一门课程，`Meeting` 描述一组重复安排，`LessonException` 描述一次取消或移动。展示层的 `Lesson` 由前述数据计算，未重复持久化。
+`Course` 描述一门课程，可没有 `Meeting` 并保留为待安排；待安排课程不会出现在周视图或小组件中。`Meeting` 描述一组重复安排，`LessonException` 描述一次取消或移动。展示层的 `Lesson` 由前述数据计算，未重复持久化。
 
 日期使用本地日历日，教学周差使用 UTC 的年月日计算，以避免夏令时导致的天数偏移。跨日运算使用日历日期构造。原始 occurrence 的稳定键为 `meetingId@YYYY-MM-DD`。
 
@@ -30,7 +34,7 @@ Android / iOS：`kejian.db`，SQLite `documents(id INTEGER PRIMARY KEY, payload 
 
 Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理站点数据会删除课表，不能代替导出备份；当前不提供跨标签页冲突合并，也不把 Web 构建声明为离线 PWA。
 
-文件选择与保存由 `file_picker` 调用系统 UI。导入最多 2 MB，CSV 最多 1000 条安排；一学期最多 300 门课程、每课 30 组安排。所有导入先完整解析、校验、预览，再一次写入。无法读取现有数据时保留原文档并显示错误，不用示例覆盖。
+文件选择与保存由 `file_picker` 调用系统 UI。CSV / JSON 导入最多 2 MB，PDF / 图片最多 20 MB，PDF 最多 5 页；CSV 最多 1000 条安排；一学期最多 300 门课程、每课 30 组安排。所有导入先完整解析、校验、预览，再一次写入。无法读取现有数据时保留原文档并显示错误，不用示例覆盖。
 
 ## 备份版本 1
 
@@ -54,3 +58,11 @@ Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理
 ## 小组件
 
 App 成功保存主文档后，把规则引擎展开的完整学期快照传给原生端。Android SharedPreferences 与 iOS App Group 原子文件作为只读副本；小组件自行按当前本地时间筛选下一节与当天安排。同步失败单独提示，不回滚已保存主文档。刷新、时间线与部署设置见 `MOBILE.md`。
+
+## PDF 与图片
+
+PDFium 优先提取 PDF 文字与字符矩形；没有可用课表文字层时，页面渲染到最长边 3200 像素并进入图片识别。图片先去除长格线、保留行边界，Android 调用 bundled ML Kit 中文 OCR，iOS 调用 Vision，Web 调用随站点打包的 Tesseract.js / WASM / 中文模型。原始文件不上传，OCR 坐标统一转换为左上角原点。
+
+空间解析器以星期表头确定列、节次标签确定行，读取斜杠分隔的课程信息；明确节次覆盖所在行默认节次，同名同教师的不同安排合并。缺节次只有在至少两行真实标签支持一致规律时才按格线推算；OCR 唯一合法的数字范围补全会保留原文并提示。未知布局、错误周次和未排时间分别进入待核对原文或待安排课程，避免静默丢弃。
+
+核对页可改学期、作息、每门课和勾选范围。追加只允许与当前学期日期、周数和作息一致，替换清除旧调课记录；两者都先完整校验、提示冲突，再走统一事务保存和小组件同步。详细边界见 `IMPORT.md`。

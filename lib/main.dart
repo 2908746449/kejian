@@ -3,11 +3,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 
 import 'data/demo.dart';
 import 'data/importer.dart';
+import 'data/document_recognizer.dart';
+import 'data/timetable_recognition.dart';
 import 'data/repository.dart';
 import 'domain/models.dart';
 import 'domain/engine.dart';
@@ -18,9 +22,17 @@ import 'ui/courses_page.dart';
 import 'ui/schedule_page.dart';
 import 'ui/settings_page.dart';
 import 'ui/lesson_dialog.dart';
+import 'ui/recognition_review.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  LicenseRegistry.addLicense(() async* {
+    for (final name in ['PDFium', 'Tesseract', 'Tesseract-models']) {
+      yield LicenseEntryWithLineBreaks([
+        name,
+      ], await rootBundle.loadString('assets/licenses/$name.txt'));
+    }
+  });
   runApp(KejianApp(repository: LocalScheduleRepository()));
 }
 
@@ -52,7 +64,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   ScheduleData? data;
   String? loadError;
   int tab = 0, week = 1;
-  bool saving = false;
+  bool saving = false, importing = false;
   String? widgetError;
   Timer? ticker;
   final scroll = ScrollController();
@@ -367,23 +379,34 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   }
 
   Future<void> importFile({bool backupOnly = false}) async {
+    if (importing) return;
+    importing = true;
     try {
       final file = await FilePicker.pickFile(
         type: FileType.custom,
-        allowedExtensions: backupOnly ? ['json'] : ['json', 'csv'],
+        allowedExtensions: backupOnly
+            ? ['json']
+            : ['json', 'csv', 'pdf', 'png', 'jpg', 'jpeg', 'webp'],
         dialogTitle: '选择课表文件',
       );
       if (file == null || !mounted) return;
       final builder = BytesBuilder();
       await for (final chunk in file.readAsByteStream()) {
         builder.add(chunk);
-        if (builder.length > 2 * 1024 * 1024) {
-          throw const FormatException('请选择 2 MB 以内的课表文件');
+        if (builder.length > 20 * 1024 * 1024) {
+          throw const FormatException('请选择 20 MB 以内的课表文件');
         }
       }
-      final source = utf8
-          .decode(builder.takeBytes())
-          .replaceFirst(RegExp('^\uFEFF'), '');
+      final bytes = builder.takeBytes();
+      final extension = file.name.toLowerCase().split('.').last;
+      if (['pdf', 'png', 'jpg', 'jpeg', 'webp'].contains(extension)) {
+        await importDocument(bytes, file.name);
+        return;
+      }
+      if (bytes.length > 2 * 1024 * 1024) {
+        throw const FormatException('CSV 和 JSON 文件请控制在 2 MB 以内');
+      }
+      final source = utf8.decode(bytes).replaceFirst(RegExp('^\uFEFF'), '');
       final isBackup = file.name.toLowerCase().endsWith('.json');
       final imported = isBackup
           ? ScheduleData.decode(source)
@@ -447,39 +470,114 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         ),
       );
       if (mode == null || !mounted) return;
-      final value = mode == 'append'
-          ? data!.copyWith(courses: [...data!.courses, ...imported.courses])
-          : isBackup
-          ? imported
-          : data!.copyWith(
-              courses: imported.courses,
-              exceptions: [],
-              isDemo: false,
-            );
-      final lessons = lessonsBetween(
-        value,
-        value.semester.firstMonday,
-        value.semester.dateAt(value.semester.weekCount, 7),
-      );
-      if (conflictKeys(lessons).isNotEmpty &&
-          !await confirm(
-            '导入后存在时间重叠',
-            '课表中存在时间冲突。继续导入后会保留全部课程并标记冲突。',
-            accept: '继续导入',
-          )) {
-        return;
-      }
-      if (await persist(value, '课表导入成功') && mounted) {
-        setState(
-          () => week = value.semester
-              .weekOf(widget.clock())
-              .clamp(1, value.semester.weekCount),
-        );
-      }
+      await applyImported(imported, mode, isBackup: isBackup);
     } on FormatException catch (e) {
       toast(e.message);
     } catch (_) {
-      toast('无法读取文件，请选择 UTF-8 编码的 CSV 或课间 JSON 备份。');
+      toast('无法读取文件，请选择 PDF、清晰课表图片、UTF-8 CSV 或课间 JSON 备份。');
+    } finally {
+      importing = false;
+    }
+  }
+
+  Future<void> importDocument(Uint8List bytes, String name) async {
+    final progress = ValueNotifier<String>('正在准备本地识别…');
+    final dialog = showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: const Text('正在识别课表'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const LinearProgressIndicator(),
+              const SizedBox(height: 18),
+              ValueListenableBuilder<String>(
+                valueListenable: progress,
+                builder: (_, value, child) =>
+                    Text(value, style: const TextStyle(height: 1.6)),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                '在当前设备处理，请保持页面打开。',
+                style: TextStyle(fontSize: 12, color: muted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    late final RecognitionResult result;
+    try {
+      result = await recognizeTimetableDocument(
+        bytes,
+        name,
+        onProgress: (stage) => progress.value = stage,
+      );
+    } finally {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      await dialog;
+      progress.dispose();
+    }
+    if (!mounted) return;
+    final selection = await Navigator.of(context).push<DocumentImportSelection>(
+      MaterialPageRoute(
+        builder: (_) => RecognitionReview(
+          result: result,
+          currentSemester: data!.semester,
+          fileName: name,
+          imageBytes: name.toLowerCase().endsWith('.pdf') ? null : bytes,
+        ),
+      ),
+    );
+    if (selection == null || !mounted) return;
+    await applyImported(
+      selection.data,
+      selection.append ? 'append' : 'replace',
+      useImportedSemester: true,
+    );
+  }
+
+  Future<void> applyImported(
+    ScheduleData imported,
+    String mode, {
+    bool isBackup = false,
+    bool useImportedSemester = false,
+  }) async {
+    final value = mode == 'append'
+        ? data!.copyWith(
+            courses: [...data!.courses, ...imported.courses],
+            isDemo: false,
+          )
+        : isBackup
+        ? imported
+        : data!.copyWith(
+            semester: useImportedSemester ? imported.semester : data!.semester,
+            courses: imported.courses,
+            exceptions: [],
+            isDemo: false,
+          );
+    final lessons = lessonsBetween(
+      value,
+      value.semester.firstMonday,
+      value.semester.dateAt(value.semester.weekCount, 7),
+    );
+    if (conflictKeys(lessons).isNotEmpty &&
+        !await confirm(
+          '导入后存在时间重叠',
+          '课表中存在时间冲突。继续导入后会保留全部课程并标记冲突。',
+          accept: '继续导入',
+        )) {
+      return;
+    }
+    if (await persist(value, '课表导入成功') && mounted) {
+      setState(
+        () => week = value.semester
+            .weekOf(widget.clock())
+            .clamp(1, value.semester.weekCount),
+      );
     }
   }
 
@@ -789,7 +887,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         ),
         const SizedBox(height: 10),
         const Text(
-          'KEJIAN  /  OPEN SOURCE  /  0.2',
+          'KEJIAN  /  OPEN SOURCE  /  0.3',
           style: TextStyle(fontSize: 8, color: muted, letterSpacing: 1),
         ),
       ],

@@ -47,3 +47,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Bundled Chinese recognizer: no network or model download at runtime.
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
+}

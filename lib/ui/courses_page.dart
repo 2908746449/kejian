@@ -60,6 +60,11 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
           ],
         ),
+        const SizedBox(height: 10),
+        const Text(
+          '支持 PDF、课表图片、CSV 和 JSON；在本机识别，核对后导入。',
+          style: TextStyle(fontSize: 11, color: muted, height: 1.7),
+        ),
         const SizedBox(height: 20),
         TextField(
           onChanged: (v) => setState(() => query = v),
@@ -75,7 +80,9 @@ class _CoursesPageState extends State<CoursesPage> {
               width: double.infinity,
               child: EmptyState(
                 title: query.isEmpty ? '课程列表还是空的' : '没有找到相关课程',
-                subtitle: query.isEmpty ? '手动添加，或从 CSV 文件导入。' : '换个关键词试试看。',
+                subtitle: query.isEmpty
+                    ? '手动添加，或导入 PDF、课表图片及 CSV。'
+                    : '换个关键词试试看。',
               ),
             ),
           ),
@@ -139,6 +146,14 @@ class _CoursesPageState extends State<CoursesPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  if (course.meetings.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        '待安排 · 补充星期和节次后显示在课表中',
+                        style: TextStyle(fontSize: 12, color: muted),
+                      ),
+                    ),
                   for (final m in course.meetings)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),

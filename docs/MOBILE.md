@@ -1,12 +1,12 @@
 # Android / iOS 与桌面小组件
 
-版本：0.2.0 开发预览，2026-11-09。
+版本：0.3.0 开发预览，2026-11-09。
 
 ## Android
 
 Android 7.0 / API 24 及以上，交付的 APK 为 arm64（多数现代 Android 手机）。`android/app/src/main/kotlin/dev/kejian/kejian/ScheduleWidget.kt` 使用系统 AppWidget / RemoteViews，无需运行 Flutter 页面。
 
-打开 App 保存课表后，在桌面长按空白处 → 小组件 → 课间。默认尺寸由桌面决定，可缩放；较高尺寸展示今日后续课程。点击组件打开 App。无账号、无网络服务、无精确闹钟权限。
+打开 App 保存课表后，在桌面长按空白处 → 小组件 → 课间。默认尺寸由桌面决定，可缩放；较高尺寸展示今日后续课程。点击组件打开 App。无账号、无课表上传服务、无精确闹钟权限。图片识别的中文 ML Kit 模型随安装包打包，无需在线下载；PDF 由 PDFium 本地提取。
 
 ```sh
 flutter pub get
@@ -17,13 +17,13 @@ flutter build apk --release --target-platform android-arm64
 
 ## iOS 15 及以上
 
-`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。WidgetKit 扩展内置小、中、大三种主屏幕尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。
+`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。WidgetKit 扩展内置小、中、大三种主屏幕尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建；本轮未通过 iOS SDK 编译。
 
 本机缺少完整 Xcode，当前交付为**已配置但尚未通过 iOS 编译和真机验证的源码工程**，没有可安装 IPA。
 
 在有完整 Xcode 的 Mac 上：
 
-1. 安装项目所需 Flutter 3.47.9 并执行 `flutter pub get`。项目级启用 Swift Package Manager，三个 iOS 插件均提供 Swift package；不要求先安装 CocoaPods。
+1. 安装项目所需 Flutter 3.47.9 并执行 `flutter pub get`。项目级启用 Swift Package Manager，当前 iOS 插件提供 Swift package；不要求先安装 CocoaPods。
 2. 执行 `flutter build ios --simulator --debug --no-codesign` 验证编译，然后打开 `ios/Runner.xcworkspace`。
 3. 真机/归档时为 `Runner` 和 `ScheduleWidget` 选择同一个 Apple 开发团队；确认两个 Bundle Identifier 属于自己的团队（默认 `dev.kejian.kejian` 与 `dev.kejian.kejian.ScheduleWidget`）。
 4. 在两个 target 的 Signing & Capabilities 中配置同一个 App Group。工程级 `KEJIAN_APP_GROUP` 默认 `group.dev.kejian.kejian`，应替换为团队实际注册的组。Info.plist、两个 entitlement 及读写代码从该设置取值。
