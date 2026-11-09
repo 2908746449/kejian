@@ -44,6 +44,10 @@ class WidgetBridge {
   }
 
   /// True means the launcher accepted the request, not that a widget was added.
-  static Future<bool> requestPin() async =>
-      isAndroid && await channel.invokeMethod<bool>('requestPin') == true;
+  static Future<bool> requestPin({bool wide = false}) async =>
+      isAndroid &&
+      await channel.invokeMethod<bool>('requestPin', {
+            'style': wide ? 'wide' : 'compact',
+          }) ==
+          true;
 }

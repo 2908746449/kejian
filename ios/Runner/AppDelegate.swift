@@ -66,7 +66,7 @@ import Vision
       do {
         guard let source = call.arguments as? String else { throw CocoaError(.coderReadCorrupt) }
         try WidgetStore.write(source)
-        WidgetCenter.shared.reloadTimelines(ofKind: "KejianScheduleWidget")
+        WidgetCenter.shared.reloadAllTimelines()
         result(nil)
       } catch {
         result(FlutterError(code: "WIDGET_SYNC", message: "小组件数据未能写入，请检查 App Group 配置", details: nil))

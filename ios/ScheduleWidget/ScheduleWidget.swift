@@ -36,16 +36,17 @@ private let paper = Color(red: 0.91, green: 0.93, blue: 0.87)
 struct ScheduleWidgetView: View {
   @Environment(\.widgetFamily) private var family
   let entry: ScheduleEntry
+  let wide: Bool
 
   var body: some View {
-    VStack(alignment: .leading, spacing: family == .systemSmall ? 5 : 12) {
+    VStack(alignment: .leading, spacing: !wide && family != .systemLarge ? 5 : 12) {
       HStack(spacing: 4) {
         Text("课间").font(.system(size: family == .systemSmall ? 11 : 13, weight: .bold))
         Spacer(minLength: 2)
         Text(entry.state.isDemo ? "示例" : entry.state.weekLabel)
           .font(.system(size: 10)).lineLimit(1)
       }.foregroundColor(accent)
-      if family == .systemMedium {
+      if wide {
         HStack(alignment: .top, spacing: 16) {
           lessonCard(entry.state.next, label: entry.state.status)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -55,7 +56,7 @@ struct ScheduleWidgetView: View {
         }
       } else {
         lessonCard(entry.state.next, label: entry.state.status)
-        Divider().padding(.vertical, family == .systemSmall ? 0 : 4)
+        Divider().padding(.vertical, family == .systemLarge ? 4 : 0)
         lessonCard(entry.state.following, label: "再下一节")
       }
       Spacer(minLength: 0)
@@ -66,7 +67,7 @@ struct ScheduleWidgetView: View {
   }
 
   private func lessonCard(_ lesson: WidgetLesson?, label: String) -> some View {
-    let compact = family == .systemSmall
+    let compact = !wide && family != .systemLarge
     return VStack(alignment: .leading, spacing: compact ? 2 : 6) {
       if compact {
         HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -107,15 +108,34 @@ private struct WidgetBackground: ViewModifier {
   }
 }
 
-@main
 struct KejianScheduleWidget: Widget {
   let kind = "KejianScheduleWidget"
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: ScheduleProvider()) { entry in
-      ScheduleWidgetView(entry: entry)
+      ScheduleWidgetView(entry: entry, wide: false)
     }
-    .configurationDisplayName("课间 · 今日课程")
-    .description("显示接下来的两门课，包含时间、教室及调课变更。")
+    .configurationDisplayName("课间 · 原版")
+    .description("保留原有尺寸，上下显示接下来的两门课、时间与教室。")
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+  }
+}
+
+struct KejianWideScheduleWidget: Widget {
+  let kind = "KejianWideScheduleWidget"
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: ScheduleProvider()) { entry in
+      ScheduleWidgetView(entry: entry, wide: true)
+    }
+    .configurationDisplayName("课间 · 宽版")
+    .description("左右并排显示接下来的两门课、时间与教室。")
+    .supportedFamilies([.systemMedium, .systemLarge])
+  }
+}
+
+@main
+struct KejianWidgets: WidgetBundle {
+  var body: some Widget {
+    KejianScheduleWidget()
+    KejianWideScheduleWidget()
   }
 }

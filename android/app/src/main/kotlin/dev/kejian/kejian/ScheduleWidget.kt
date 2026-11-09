@@ -18,7 +18,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 /** Native RemoteViews work without a Flutter engine or an open app. */
-class ScheduleWidget : AppWidgetProvider() {
+open class ScheduleWidget : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) = updateAll(context)
 
     override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) = updateAll(context)
@@ -32,7 +32,10 @@ class ScheduleWidget : AppWidgetProvider() {
     }
 
     override fun onDisabled(context: Context) {
-        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(refreshIntent(context))
+        val manager = AppWidgetManager.getInstance(context)
+        if (providers(context).all { manager.getAppWidgetIds(it).isEmpty() }) {
+            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(refreshIntent(context))
+        }
     }
 
     companion object {
@@ -40,10 +43,20 @@ class ScheduleWidget : AppWidgetProvider() {
         const val KEY = "snapshot.v1"
         private const val REFRESH = "dev.kejian.kejian.WIDGET_REFRESH"
 
+        fun providers(context: Context) = listOf(
+            ComponentName(context, ScheduleWidget::class.java),
+            ComponentName(context, WideScheduleWidget::class.java)
+        )
+
         fun updateAll(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
-            val ids = manager.getAppWidgetIds(ComponentName(context, ScheduleWidget::class.java))
-            if (ids.isEmpty()) return
+            val widgets = listOf(
+                ScheduleWidget::class.java to R.layout.widget_schedule_compact,
+                WideScheduleWidget::class.java to R.layout.widget_schedule
+            ).flatMap { (provider, layout) ->
+                manager.getAppWidgetIds(ComponentName(context, provider)).map { it to layout }
+            }
+            if (widgets.isEmpty()) return
             val now = System.currentTimeMillis()
             val snapshot = readSnapshot(context)
             val upcoming = snapshot?.lessons?.filter { it.end > now }.orEmpty()
@@ -51,10 +64,12 @@ class ScheduleWidget : AppWidgetProvider() {
             val following = upcoming.getOrNull(1)
             val today = format("yyyy-MM-dd", now)
             val week = snapshot?.weekLabel(today) ?: "添加你的课程"
-            for (id in ids) {
-                val views = RemoteViews(context.packageName, R.layout.widget_schedule)
+            for ((id, layout) in widgets) {
+                val views = RemoteViews(context.packageName, layout)
                 views.setTextViewText(R.id.widget_date, "课间 · ${format("M月d日", now)}")
                 views.setTextViewText(R.id.widget_week, if (snapshot?.isDemo == true) "$week · 示例" else week)
+                val width = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+                views.setViewVisibility(R.id.widget_week, if (width in 1..179) View.GONE else View.VISIBLE)
                 views.setTextViewText(R.id.widget_status, when {
                     snapshot == null -> "先打开课间，同步课表"
                     next == null -> "暂无后续课程"
@@ -112,6 +127,8 @@ class ScheduleWidget : AppWidgetProvider() {
         }
     }
 }
+
+class WideScheduleWidget : ScheduleWidget()
 
 private data class WidgetLesson(val name: String, val room: String, val date: String,
     val start: Long, val end: Long, val changed: Boolean)

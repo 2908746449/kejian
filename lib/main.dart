@@ -119,7 +119,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> addDesktopWidget() async {
+  Future<void> addDesktopWidget({bool wide = false}) async {
     if (addingWidget || data == null) return;
     setState(() {
       addingWidget = true;
@@ -127,11 +127,11 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     });
     try {
       if (!await syncWidgets(data!)) return;
-      final requested = await WidgetBridge.requestPin();
+      final requested = await WidgetBridge.requestPin(wide: wide);
       if (!mounted) return;
       setState(() {
         widgetAddMessage = requested
-            ? '已向桌面请求添加，请在系统弹窗中确认；取消后可再次点击。'
+            ? '已向桌面请求添加${wide ? '宽版' : '原版'}，请在系统弹窗中确认；取消后可再次点击。'
             : '当前桌面不支持直接添加，请按下方步骤手动添加。';
       });
       await refreshWidgetStatus();
@@ -674,6 +674,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         addingWidget: addingWidget,
         widgetAddMessage: widgetAddMessage,
         onWidgetAdd: addDesktopWidget,
+        onWidgetAddWide: () => addDesktopWidget(wide: true),
         widgetError: widgetError,
         onWidgetSync: () async {
           if (await syncWidgets(data!)) toast('已请求更新桌面小组件');

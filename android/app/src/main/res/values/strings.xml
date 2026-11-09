@@ -1,3 +1,4 @@
 <resources>
     <string name="widget_description">课间：接下来的两门课，显示时间、教室及停课调课变更。</string>
+    <string name="widget_wide_description">课间宽版：左右并排显示接下来的两门课、时间与教室。</string>
 </resources>

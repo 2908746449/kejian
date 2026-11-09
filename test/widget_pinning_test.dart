@@ -10,9 +10,11 @@ import 'package:kejian/platform/widget_bridge.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final calls = <String>[];
+  final styles = <String>[];
   Object pinResult = true;
   setUp(() {
     calls.clear();
+    styles.clear();
     pinResult = true;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(WidgetBridge.channel, (call) async {
@@ -25,6 +27,7 @@ void main() {
             };
           }
           if (call.method == 'requestPin') {
+            styles.add((call.arguments as Map)['style'] as String);
             if (pinResult is PlatformException) throw pinResult;
             return pinResult;
           }
@@ -64,12 +67,32 @@ void main() {
     await tester.tap(find.text('添加到桌面'));
     await tester.pumpAndSettle();
     expect(calls, ['sync', 'requestPin', 'status']);
+    expect(styles, ['compact']);
     expect(find.textContaining('请在系统弹窗中确认'), findsOneWidget);
     expect(find.textContaining('桌面已添加'), findsNothing);
     expect(identical(repository.value, original), isTrue);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets(
+    'wide widget requests its own provider after syncing the schedule',
+    (tester) async {
+      final repository = await openSettings(tester);
+      final original = repository.value;
+      final button = find.text('添加宽版');
+      await tester.ensureVisible(button);
+      calls.clear();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(calls, ['sync', 'requestPin', 'status']);
+      expect(styles, ['wide']);
+      expect(find.textContaining('已向桌面请求添加宽版'), findsOneWidget);
+      expect(repository.value, same(original));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets('unsupported launcher shows Xiaomi manual instructions', (
     tester,

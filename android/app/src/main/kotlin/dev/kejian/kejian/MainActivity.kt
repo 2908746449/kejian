@@ -60,7 +60,7 @@ class MainActivity : FlutterActivity() {
                     }
                     "requestPin" -> {
                         try {
-                            result.success(WidgetPinning.request(this))
+                            result.success(WidgetPinning.request(this, call.argument<String>("style") == "wide"))
                         } catch (_: Exception) {
                             result.error("WIDGET_PIN", "桌面暂时无法添加，请按手动步骤添加小组件。", null)
                         }

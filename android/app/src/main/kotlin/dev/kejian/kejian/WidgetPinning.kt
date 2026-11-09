@@ -9,20 +9,20 @@ import android.os.Build
 object WidgetPinning {
     fun status(context: Context): Map<String, Any> {
         val manager = AppWidgetManager.getInstance(context)
-        val provider = ComponentName(context, ScheduleWidget::class.java)
+        val providers = ScheduleWidget.providers(context)
         return mapOf(
-            "registered" to manager.installedProviders.any { it.provider == provider },
+            "registered" to providers.all { provider -> manager.installedProviders.any { it.provider == provider } },
             "pinSupported" to (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 manager.isRequestPinAppWidgetSupported),
-            "installedCount" to manager.getAppWidgetIds(provider).size
+            "installedCount" to providers.sumOf { manager.getAppWidgetIds(it).size }
         )
     }
 
-    fun request(context: Context): Boolean {
+    fun request(context: Context, wide: Boolean = false): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
         val manager = AppWidgetManager.getInstance(context)
         if (!manager.isRequestPinAppWidgetSupported) return false
-        val provider = ComponentName(context, ScheduleWidget::class.java)
+        val provider = ComponentName(context, if (wide) WideScheduleWidget::class.java else ScheduleWidget::class.java)
         check(manager.installedProviders.any { it.provider == provider })
         return manager.requestPinAppWidget(provider, null, null)
     }

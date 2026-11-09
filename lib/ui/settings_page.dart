@@ -15,7 +15,7 @@ class SettingsPage extends StatelessWidget {
   final bool androidWidgets, addingWidget;
   final AndroidWidgetStatus? androidWidgetStatus;
   final String? widgetAddMessage;
-  final VoidCallback? onWidgetAdd;
+  final VoidCallback? onWidgetAdd, onWidgetAddWide;
   const SettingsPage({
     super.key,
     required this.data,
@@ -32,6 +32,7 @@ class SettingsPage extends StatelessWidget {
     this.androidWidgetStatus,
     this.widgetAddMessage,
     this.onWidgetAdd,
+    this.onWidgetAddWide,
   });
   @override
   Widget build(BuildContext context) => Column(
@@ -85,15 +86,28 @@ class SettingsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                androidWidgets ? '显示接下来的两门课及时间、教室。点击「添加到桌面」，再在系统弹窗中确认。' : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n显示接下来的两门课及时间、教室，点击小组件可打开 App。',
+                androidWidgets
+                    ? '原版保留原来的尺寸，宽版左右显示两门课。选择下方按钮，再在系统弹窗中确认。'
+                    : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n可选原版或宽版，均显示接下来的两门课及时间、教室。',
                 style: const TextStyle(color: muted, fontSize: 12, height: 1.8),
               ),
               if (androidWidgets) ...[
                 const SizedBox(height: 12),
-                FilledButton.icon(
-                  onPressed: addingWidget ? null : onWidgetAdd,
-                  icon: const Icon(Icons.add_to_home_screen, size: 18),
-                  label: Text(addingWidget ? '正在请求…' : '添加到桌面'),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: addingWidget ? null : onWidgetAdd,
+                      icon: const Icon(Icons.add_to_home_screen, size: 18),
+                      label: Text(addingWidget ? '正在请求…' : '添加到桌面'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: addingWidget ? null : onWidgetAddWide,
+                      icon: const Icon(Icons.view_column_outlined, size: 18),
+                      label: const Text('添加宽版'),
+                    ),
+                  ],
                 ),
                 if ((androidWidgetStatus?.installedCount ?? 0) > 0)
                   Padding(
