@@ -7,6 +7,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.widget.RemoteViews
 import org.json.JSONObject
@@ -54,9 +55,15 @@ open class ScheduleWidget : AppWidgetProvider() {
                 WideScheduleWidget::class.java to R.layout.widget_schedule
             ).flatMap { (provider, layout) ->
                 manager.getAppWidgetIds(ComponentName(context, provider)).map { id ->
-                    val height = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
-                    id to if (provider == WideScheduleWidget::class.java && height in 1..159)
-                        R.layout.widget_schedule_dense else layout
+                    val wide = provider == WideScheduleWidget::class.java
+                    val options = manager.getAppWidgetOptions(id)
+                    val heightKey = if (context.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+                        AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT
+                    val height = options.getInt(heightKey)
+                    val sizedLayout = if (height in 1..159) {
+                        if (wide) R.layout.widget_schedule_dense else R.layout.widget_schedule_compact_dense
+                    } else layout
+                    Triple(id, sizedLayout, wide)
                 }
             }
             if (widgets.isEmpty()) return
@@ -68,9 +75,8 @@ open class ScheduleWidget : AppWidgetProvider() {
             val today = format("yyyy-MM-dd", now)
             val tomorrow = format("yyyy-MM-dd", Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 1) }.timeInMillis)
             val week = snapshot?.weekLabel(today) ?: "添加你的课程"
-            for ((id, layout) in widgets) {
+            for ((id, layout, wide) in widgets) {
                 val views = RemoteViews(context.packageName, layout)
-                val wide = layout != R.layout.widget_schedule_compact
                 views.setTextViewText(R.id.widget_date, if (wide) "课间 · ${format("M月d日", now)}" else "课间 · ${format("M/d", now)}")
                 val width = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
                 val shortWeek = width in 1..199 && !wide
