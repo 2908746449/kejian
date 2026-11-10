@@ -87,8 +87,8 @@ class SettingsPage extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 androidWidgets
-                    ? '原版保留原来的尺寸，宽版为 4×2 横向长方形，左右显示两门课。选择下方按钮，再在系统弹窗中确认。'
-                    : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n可选原版或宽版，均显示接下来的两门课及时间、教室。',
+                    ? '2×2 小方块上下显示两门课，4×2 横向双卡显示更完整。选择下方按钮，再在系统弹窗中确认。'
+                    : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n可选 2×2 或 4×2，均显示接下来的两门课及时间、教室。',
                 style: const TextStyle(color: muted, fontSize: 12, height: 1.8),
               ),
               if (androidWidgets) ...[
@@ -100,12 +100,12 @@ class SettingsPage extends StatelessWidget {
                     FilledButton.icon(
                       onPressed: addingWidget ? null : onWidgetAdd,
                       icon: const Icon(Icons.add_to_home_screen, size: 18),
-                      label: Text(addingWidget ? '正在请求…' : '添加到桌面'),
+                      label: Text(addingWidget ? '正在请求…' : '添加 2×2'),
                     ),
                     OutlinedButton.icon(
                       onPressed: addingWidget ? null : onWidgetAddWide,
                       icon: const Icon(Icons.view_column_outlined, size: 18),
-                      label: const Text('添加宽版'),
+                      label: const Text('添加 4×2'),
                     ),
                   ],
                 ),

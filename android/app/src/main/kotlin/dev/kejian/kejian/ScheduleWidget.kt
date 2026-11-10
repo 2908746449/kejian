@@ -8,7 +8,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -54,7 +53,11 @@ open class ScheduleWidget : AppWidgetProvider() {
                 ScheduleWidget::class.java to R.layout.widget_schedule_compact,
                 WideScheduleWidget::class.java to R.layout.widget_schedule
             ).flatMap { (provider, layout) ->
-                manager.getAppWidgetIds(ComponentName(context, provider)).map { it to layout }
+                manager.getAppWidgetIds(ComponentName(context, provider)).map { id ->
+                    val height = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+                    id to if (provider == WideScheduleWidget::class.java && height in 1..159)
+                        R.layout.widget_schedule_dense else layout
+                }
             }
             if (widgets.isEmpty()) return
             val now = System.currentTimeMillis()
@@ -63,31 +66,43 @@ open class ScheduleWidget : AppWidgetProvider() {
             val next = upcoming.firstOrNull()
             val following = upcoming.getOrNull(1)
             val today = format("yyyy-MM-dd", now)
+            val tomorrow = format("yyyy-MM-dd", Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 1) }.timeInMillis)
             val week = snapshot?.weekLabel(today) ?: "添加你的课程"
             for ((id, layout) in widgets) {
                 val views = RemoteViews(context.packageName, layout)
-                views.setTextViewText(R.id.widget_date, "课间 · ${format("M月d日", now)}")
-                views.setTextViewText(R.id.widget_week, if (snapshot?.isDemo == true) "$week · 示例" else week)
+                val wide = layout != R.layout.widget_schedule_compact
+                views.setTextViewText(R.id.widget_date, if (wide) "课间 · ${format("M月d日", now)}" else "课间 · ${format("M/d", now)}")
                 val width = manager.getAppWidgetOptions(id).getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
-                views.setViewVisibility(R.id.widget_week, if (width in 1..179) View.GONE else View.VISIBLE)
+                val shortWeek = width in 1..199 && !wide
+                views.setTextViewText(R.id.widget_week, if (snapshot?.isDemo == true) {
+                    if (shortWeek) "示例" else "$week · 示例"
+                } else if (shortWeek) week.replace(" ", "") else week)
                 views.setTextViewText(R.id.widget_status, when {
                     snapshot == null -> "先打开课间，同步课表"
                     next == null -> "暂无后续课程"
                     next.start <= now -> "正在上课"
-                    else -> "下一节课"
+                    else -> if (wide) "下一节课" else "下一节"
                 })
-                views.setTextViewText(R.id.widget_name, next?.name ?: "享受一段自由时光")
+                views.setTextViewText(R.id.widget_name, next?.name ?: if (snapshot == null) "打开课间" else "自由时光")
                 val whenText = next?.let { timeLabel(it, today) } ?: "点击打开课间"
-                views.setTextViewText(R.id.widget_time, whenText)
+                views.setTextViewText(R.id.widget_time, next?.let {
+                    if (wide) clockLabel(it) else "${dayLabel(it, today, tomorrow)} ${clockLabel(it)}"
+                } ?: "点击打开课间")
                 views.setTextViewText(R.id.widget_room, next?.let {
                     (if (it.room.isEmpty()) "教室待补充" else it.room) + if (it.changed) " · 已调课" else ""
-                } ?: "好好上课，也好好生活。")
-                views.setViewVisibility(R.id.widget_second, if (next != null) View.VISIBLE else View.GONE)
-                views.setTextViewText(R.id.widget_second_name, following?.name ?: "暂无后续课程")
-                views.setTextViewText(R.id.widget_second_time, following?.let { timeLabel(it, today) } ?: "点击打开课间")
+                } ?: if (snapshot == null) "同步你的课表" else "好好休息，慢慢来")
+                views.setTextViewText(R.id.widget_second_status, if (following != null) "再下一节" else "接下来")
+                views.setTextViewText(R.id.widget_second_name, following?.name ?: "暂无课程")
+                views.setTextViewText(R.id.widget_second_time, following?.let {
+                    if (wide) clockLabel(it) else "${dayLabel(it, today, tomorrow)} ${clockLabel(it)}"
+                } ?: "暂无后续安排")
                 views.setTextViewText(R.id.widget_second_room, following?.let {
                     (it.room.ifEmpty { "教室待补充" }) + if (it.changed) " · 已调课" else ""
-                }.orEmpty())
+                } ?: "留一点时间给自己")
+                if (wide) {
+                    views.setTextViewText(R.id.widget_day, next?.let { dayLabel(it, today, tomorrow) }.orEmpty())
+                    views.setTextViewText(R.id.widget_second_day, following?.let { dayLabel(it, today, tomorrow) }.orEmpty())
+                }
                 val open = PendingIntent.getActivity(context, 0,
                     Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -123,7 +138,15 @@ open class ScheduleWidget : AppWidgetProvider() {
 
         private fun timeLabel(lesson: WidgetLesson, today: String): String {
             val day = if (lesson.date == today) "今天" else format("M/d", lesson.start)
-            return "$day ${format("HH:mm", lesson.start)}—${format("HH:mm", lesson.end)}"
+            return "$day ${clockLabel(lesson)}"
+        }
+
+        private fun clockLabel(lesson: WidgetLesson) = "${format("HH:mm", lesson.start)}—${format("HH:mm", lesson.end)}"
+
+        private fun dayLabel(lesson: WidgetLesson, today: String, tomorrow: String) = when (lesson.date) {
+            today -> "今天"
+            tomorrow -> "明天"
+            else -> format("M/d", lesson.start)
         }
     }
 }

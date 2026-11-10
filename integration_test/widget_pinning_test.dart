@@ -23,8 +23,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('设置').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('添加到桌面'));
-    await tester.tap(find.text('添加到桌面'));
+    await tester.ensureVisible(find.text('添加 2×2'));
+    await tester.tap(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     expect(find.textContaining('已向桌面请求添加'), findsOneWidget);
     debugPrint(

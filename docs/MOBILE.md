@@ -1,18 +1,18 @@
 # Android / iOS 与桌面小组件
 
-版本：0.3.2 开发预览，2026-11-09。
+版本：0.3.3 开发预览，2026-11-10。
 
-默认凯里学院作息；Android 和 iOS 均提供原版与宽版两个独立入口，都显示接下来的两门课，跨日期接续，时间来自当前已保存作息。原版保留旧尺寸并上下排列，宽版为横向长方形并左右排列。Android 原版最小宽高 250×130dp，宽版默认 4×2、备用最小宽高 250×110dp，仅横向缩放；iOS 原版支持小、中、大尺寸，宽版仅支持横向中尺寸。完整说明见 `TIMETABLE_DEFAULTS.md`。
+默认凯里学院作息；Android 和 iOS 均提供「课间 · 2×2」和「课间 · 4×2」两个独立入口，显示接下来的两门课、日期、时间和教室。Android 小方块明确声明 2×2，宽版声明 4×2；两种卡片通过剩余高度分配内容，避免文字集中在顶部、下方大量留空。iOS 小方块保留小、中、大尺寸以兼容已有实例，4×2 入口仅提供横向中尺寸。完整说明见 `TIMETABLE_DEFAULTS.md`。
 
 ## Android
 
 Android 7.0 / API 24 及以上，交付的 APK 为 arm64（多数现代 Android 手机）。`android/app/src/main/kotlin/dev/kejian/kejian/ScheduleWidget.kt` 使用系统 AppWidget / RemoteViews，无需运行 Flutter 页面。
 
-打开 App → 设置 → 桌面小组件 → **添加到桌面**（原版）或 **添加宽版**，在系统弹窗中确认。Android 8 及以上且桌面支持时，通过系统 `requestPinAppWidget` 请求添加；接受请求不代表已添加，用户仍可取消。回到 App 后会重新读取系统实际绑定的数量。不支持直接添加、Android 7 或点击后没有弹窗时使用手动方式。
+打开 App → 设置 → 桌面小组件 → **添加 2×2** 或 **添加 4×2**，在系统弹窗中确认。Android 8 及以上且桌面支持时，通过系统 `requestPinAppWidget` 请求添加；接受请求不代表已添加，用户仍可取消。回到 App 后会重新读取系统实际绑定的数量。不支持直接添加、Android 7 或点击后没有弹窗时使用手动方式。
 
 小米 / 澎湃 OS 的小部件中心有独立的安卓原生小部件入口：桌面双指捏合或长按空白处 → 添加小部件 → 右上角搜索 → 应用列表底部的「安卓小部件」→ 课间。部分桌面版本入口名为「全部应用小部件」。课间没有接入小米专有小部件中心。该路径依据小米官方适配说明；本轮未连接小米 14 Pro 真机。
 
-其他桌面：长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。选择「课间」原版或「课间 · 宽版」。实际占格由桌面决定，可缩放；原版保留旧尺寸并上下排列，宽版默认 4×2、左右显示下一节和再下一节。点击组件打开 App。组件同时提供 Android 12+ 的布局预览和旧桌面使用的图片预览。Receiver 保持 `exported=false`，遵循 Android 官方注册示例。
+其他桌面：长按桌面空白处 → 小组件 → 课间，长按或拖动到桌面。选择「课间 · 2×2」或「课间 · 4×2」。实际占格由桌面决定；小方块固定声明为 2×2，宽版默认 4×2 且仅横向缩放。2×2 上下显示，4×2 左右显示。点击组件打开 App。组件同时提供 Android 12+ 的布局预览和旧桌面使用的图片预览。Receiver 保持 `exported=false`，遵循 Android 官方注册示例。
 
 无账号、无课表上传服务、无精确闹钟权限。图片识别的中文 ML Kit 模型随安装包打包，无需在线下载；PDF 由 PDFium 本地提取。
 
@@ -25,9 +25,9 @@ flutter build apk --release --target-platform android-arm64
 
 ## iOS 15 及以上
 
-`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。同一 WidgetKit 扩展通过 WidgetBundle 注册「课间 · 原版」与「课间 · 宽版」；原版保留小、中、大三种主屏幕尺寸，宽版仅支持横向中尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
+`Runner` 和 `ScheduleWidget` 的 Debug / Release / Profile 均明确设置最低 iOS 15.0。同一 WidgetKit 扩展通过 WidgetBundle 注册「课间 · 2×2」与「课间 · 4×2」；原版保留小、中、大三种主屏幕尺寸，宽版仅支持横向中尺寸；iOS 17 的容器背景 API 由版本判断保护，iOS 15 使用兼容布局。未加入锁屏组件或交互式按钮。图片识别使用系统 Vision，PDF 依赖 pdfrx / PDFium 的 iOS 15 构建。
 
-本机缺少完整 Xcode。0.3.2 已在 GitHub Actions 使用完整 Xcode 完成 App、包含两个小组件入口的 WidgetKit 扩展的 [iPhoneOS Release 编译与 TrollStore IPA 打包](https://github.com/2908746449/kejian/actions/runs/42647389856)。iPhone 使用 `kejian-ios-trollstore-v0.3.2.ipa`。此前 0.3.1 的[模拟器编译产物](https://github.com/2908746449/kejian/actions/runs/42566023283) 仍供开发者参考。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
+本机缺少完整 Xcode。iPhoneOS Release 和 WidgetKit 扩展通过 GitHub Actions 的完整 Xcode 构建，产物为 `kejian-ios-trollstore-v0.3.3.ipa`。每个版本的实际任务与校验结果见 `VERIFICATION.md`。尚未完成 iOS 15 真机或 WidgetKit 运行验证。
 
 使用 Apple 开发团队签名时，在有完整 Xcode 的 Mac 上：
 
@@ -44,7 +44,7 @@ flutter build apk --release --target-platform android-arm64
 
 已有可用 TrollStore 的设备可安装真机 Release IPA。项目最低 iOS 15.0；TrollStore 官方支持 14.0 beta 2—16.6.1、16.7 RC（20H18）和 17.0，因此应同时满足项目和安装工具的版本要求。iOS 15.6.1 在范围内。这里的 IPA 不用于 TestFlight 或 App Store。
 
-安装时将 `kejian-ios-trollstore-v0.3.2.ipa` 分享给 TrollStore 并确认安装。先打开课间一次，导入或建立课表，再长按主屏幕空白处 → 左上角「+」→ 搜索「课间」→ 选择原版或宽版及其尺寸 → 添加小组件。进入课间的设置页可重试同步；系统决定实际刷新时机。两种入口、各尺寸和同步仍需在实际设备验收。
+安装时将 `kejian-ios-trollstore-v0.3.3.ipa` 分享给 TrollStore 并确认安装。先打开课间一次，导入或建立课表，再长按主屏幕空白处 → 左上角「+」→ 搜索「课间」→ 选择 2×2 或 4×2 及其尺寸 → 添加小组件。进入课间的设置页可重试同步；系统决定实际刷新时机。两种入口、各尺寸和同步仍需在实际设备验收。
 
 `.github/workflows/mobile.yml` 手动运行时新增 `ios-trollstore` 任务：
 
@@ -57,7 +57,7 @@ python3 tool/package_trollstore_ipa.py --app build/ios/iphoneos/Runner.app --out
 
 该任务使用 `iphoneos` SDK 和 Flutter AOT Release。打包脚本检查两个 target 的最低系统、版本、Bundle Identifier、App Group、内嵌 WidgetKit 扩展，以及所有 Mach-O 的 arm64 架构和 iPhoneOS 平台。主 App 和扩展分别保留应用身份及共享组权限，使用本地 `TROLLTROLL` 身份；TrollStore 在手机上完成安装签名。脚本用 ldid 读取权限并逐页核对 CodeDirectory 哈希，输出 `Payload/Runner.app` 结构的 IPA 和 JSON 校验报告。ldid 伪签名没有 Apple CMS 签名，不使用 macOS `codesign --verify` 判断其是否可被 TrollStore 安装。
 
-GitHub 的两个已有任务仍提供 Android debug APK 与 iOS 模拟器 App。[0.3.1 的两个任务均已成功](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不保存 Apple 开发者签名或商店发布凭据。
+GitHub 的其他任务仍提供 Android debug APK 与 iOS 模拟器 App。[0.3.1 的两个任务均已成功](https://github.com/2908746449/kejian/actions/runs/42566722778)。Android 初始化已修正为明确安装 SDK 36、build-tools 36.0.0 和 platform-tools，避免请求下架的旧 `tools` 包。流程不保存 Apple 开发者签名或商店发布凭据。
 
 ## 数据一致性与刷新
 

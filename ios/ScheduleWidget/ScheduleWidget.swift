@@ -29,9 +29,11 @@ struct ScheduleProvider: TimelineProvider {
   }
 }
 
-private let ink = Color(red: 0.15, green: 0.20, blue: 0.18)
+private let ink = Color(red: 0.15, green: 0.24, blue: 0.18)
 private let accent = Color(red: 0.31, green: 0.42, blue: 0.37)
 private let paper = Color(red: 0.91, green: 0.93, blue: 0.87)
+private let firstCard = Color(red: 0.98, green: 0.99, blue: 0.96)
+private let secondCard = Color(red: 0.86, green: 0.90, blue: 0.84)
 
 struct ScheduleWidgetView: View {
   @Environment(\.widgetFamily) private var family
@@ -39,62 +41,93 @@ struct ScheduleWidgetView: View {
   let wide: Bool
 
   var body: some View {
-    VStack(alignment: .leading, spacing: !wide && family != .systemLarge ? 5 : 12) {
+    VStack(alignment: .leading, spacing: wide ? 8 : 5) {
       HStack(spacing: 4) {
-        Text("课间").font(.system(size: family == .systemSmall ? 11 : 13, weight: .bold))
+        Text(wide ? "课间 · \(dateLabel)" : "课间")
+          .font(.system(size: wide ? 12 : 11, weight: .bold))
         Spacer(minLength: 2)
         Text(entry.state.isDemo ? "示例" : entry.state.weekLabel)
-          .font(.system(size: 10)).lineLimit(1)
+          .font(.system(size: 9, weight: .medium)).lineLimit(1)
       }.foregroundColor(accent)
       if wide {
-        HStack(alignment: .top, spacing: 16) {
-          lessonCard(entry.state.next, label: entry.state.status)
-            .frame(maxWidth: .infinity, alignment: .leading)
-          Divider()
-          lessonCard(entry.state.following, label: "再下一节")
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
+        HStack(spacing: 8) {
+          wideLessonCard(entry.state.next, label: entry.state.status, color: firstCard)
+          wideLessonCard(entry.state.following, label: "再下一节", color: secondCard)
+        }.frame(maxHeight: .infinity)
       } else {
-        lessonCard(entry.state.next, label: entry.state.status)
-        Divider().padding(.vertical, family == .systemLarge ? 4 : 0)
-        lessonCard(entry.state.following, label: "再下一节")
+        compactLessonCard(entry.state.next, label: entry.state.status, color: firstCard)
+        compactLessonCard(entry.state.following, label: "再下一节", color: secondCard)
       }
-      Spacer(minLength: 0)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .modifier(WidgetBackground())
     .accessibilityElement(children: .combine)
   }
 
-  private func lessonCard(_ lesson: WidgetLesson?, label: String) -> some View {
-    let compact = !wide && family != .systemLarge
-    return VStack(alignment: .leading, spacing: compact ? 2 : 6) {
-      if compact {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-          Text(label).font(.system(size: 8)).foregroundColor(accent)
-          Text(lesson?.name ?? "暂无课程")
-            .font(.system(size: 13, weight: .bold)).foregroundColor(ink)
-        }.lineLimit(1).minimumScaleFactor(0.75)
-      } else {
-        Text(label).font(.system(size: 10)).foregroundColor(accent)
-        Text(lesson?.name ?? "暂无后续课程")
-          .font(.system(size: family == .systemLarge ? 21 : 18, weight: .bold))
-          .foregroundColor(ink).lineLimit(2).minimumScaleFactor(0.75)
-      }
-      if let lesson = lesson {
-        Text(timeLabel(lesson)).font(.system(size: compact ? 9 : 11)).foregroundColor(accent).lineLimit(1).minimumScaleFactor(0.75)
-        Text((lesson.room.isEmpty ? "教室待补充" : lesson.room) + (lesson.changed ? " · 已调课" : ""))
-          .font(.system(size: compact ? 9 : 11)).foregroundColor(accent).lineLimit(1).minimumScaleFactor(0.75)
-      } else {
-        Text("点击打开课间").font(.system(size: compact ? 9 : 11)).foregroundColor(accent)
-      }
+  private func wideLessonCard(_ lesson: WidgetLesson?, label: String, color: Color) -> some View {
+    VStack(alignment: .leading, spacing: 5) {
+      HStack(spacing: 2) {
+        Text(label).lineLimit(1).minimumScaleFactor(0.8)
+        Spacer(minLength: 2)
+        Text(lesson.map(dayLabel) ?? "")
+      }.font(.system(size: 9)).foregroundColor(accent)
+      Text(lesson?.name ?? "暂无课程")
+        .font(.system(size: 19, weight: .bold)).foregroundColor(ink)
+        .lineLimit(2).minimumScaleFactor(0.75)
+        .frame(maxHeight: .infinity, alignment: .leading)
+      Text(lesson.map(clockLabel) ?? "暂无后续安排")
+        .font(.system(size: 12, weight: .semibold)).foregroundColor(ink)
+        .lineLimit(1).minimumScaleFactor(0.8)
+      HStack(spacing: 3) {
+        Image(systemName: "mappin.and.ellipse").font(.system(size: 9))
+        Text(lesson.map(roomLabel) ?? "留一点时间给自己")
+          .font(.system(size: 10)).lineLimit(1).minimumScaleFactor(0.8)
+      }.foregroundColor(accent)
     }
+    .padding(10)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .background(RoundedRectangle(cornerRadius: 14).fill(color))
   }
 
-  private func timeLabel(_ lesson: WidgetLesson) -> String {
-    let today = WidgetDates.key(entry.date, in: WidgetDates.calendar)
-    let day = lesson.date == today ? "今天" : String(lesson.date.suffix(5)).replacingOccurrences(of: "-", with: "/")
-    return "\(day) \(lesson.start)—\(lesson.end)"
+  private func compactLessonCard(_ lesson: WidgetLesson?, label: String, color: Color) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+      HStack(alignment: .firstTextBaseline, spacing: 4) {
+        Text(label == "下一节课" ? "下一节" : label)
+          .font(.system(size: 7)).foregroundColor(accent)
+        Text(lesson?.name ?? "暂无课程")
+          .font(.system(size: family == .systemLarge ? 19 : 13, weight: .bold))
+          .foregroundColor(ink)
+      }.lineLimit(1).minimumScaleFactor(0.75)
+      Text(lesson.map { "\(dayLabel($0)) \(clockLabel($0))" } ?? "点击打开课间")
+        .font(.system(size: 9, weight: .semibold)).foregroundColor(accent)
+        .lineLimit(1).minimumScaleFactor(0.8)
+      Text(lesson.map(roomLabel) ?? "同步课表，安排从容")
+        .font(.system(size: 9)).foregroundColor(accent)
+        .lineLimit(1).minimumScaleFactor(0.8)
+    }
+    .padding(.horizontal, 8).padding(.vertical, 5)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .background(RoundedRectangle(cornerRadius: 12).fill(color))
+  }
+
+  private var dateLabel: String {
+    let calendar = WidgetDates.calendar
+    return "\(calendar.component(.month, from: entry.date))月\(calendar.component(.day, from: entry.date))日"
+  }
+
+  private func dayLabel(_ lesson: WidgetLesson) -> String {
+    let calendar = WidgetDates.calendar
+    let today = WidgetDates.key(entry.date, in: calendar)
+    let tomorrow = calendar.date(byAdding: .day, value: 1, to: entry.date).map { WidgetDates.key($0, in: calendar) }
+    if lesson.date == today { return "今天" }
+    if lesson.date == tomorrow { return "明天" }
+    return String(lesson.date.suffix(5)).replacingOccurrences(of: "-", with: "/")
+  }
+
+  private func clockLabel(_ lesson: WidgetLesson) -> String { "\(lesson.start)—\(lesson.end)" }
+
+  private func roomLabel(_ lesson: WidgetLesson) -> String {
+    (lesson.room.isEmpty ? "教室待补充" : lesson.room) + (lesson.changed ? " · 已调课" : "")
   }
 }
 
@@ -103,7 +136,7 @@ private struct WidgetBackground: ViewModifier {
     if #available(iOS 17.0, *) {
       content.containerBackground(for: .widget) { paper }
     } else {
-      content.padding(14).background(paper)
+      content.padding(12).background(paper)
     }
   }
 }
@@ -114,8 +147,8 @@ struct KejianScheduleWidget: Widget {
     StaticConfiguration(kind: kind, provider: ScheduleProvider()) { entry in
       ScheduleWidgetView(entry: entry, wide: false)
     }
-    .configurationDisplayName("课间 · 原版")
-    .description("保留原有尺寸，上下显示接下来的两门课、时间与教室。")
+    .configurationDisplayName("课间 · 2×2")
+    .description("小方块双课表，上下显示接下来的两门课、时间与教室。")
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
@@ -126,8 +159,8 @@ struct KejianWideScheduleWidget: Widget {
     StaticConfiguration(kind: kind, provider: ScheduleProvider()) { entry in
       ScheduleWidgetView(entry: entry, wide: true)
     }
-    .configurationDisplayName("课间 · 宽版")
-    .description("横向长方形，左右并排显示接下来的两门课、时间与教室。")
+    .configurationDisplayName("课间 · 4×2")
+    .description("横向双卡，大字课名、上课时间和教室一目了然。")
     .supportedFamilies([.systemMedium])
   }
 }

@@ -53,7 +53,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('设置').last);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('添加到桌面'));
+    await tester.ensureVisible(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     return repository;
   }
@@ -64,7 +64,7 @@ void main() {
     final repository = await openSettings(tester);
     final original = repository.value;
     calls.clear();
-    await tester.tap(find.text('添加到桌面'));
+    await tester.tap(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     expect(calls, ['sync', 'requestPin', 'status']);
     expect(styles, ['compact']);
@@ -80,14 +80,14 @@ void main() {
     (tester) async {
       final repository = await openSettings(tester);
       final original = repository.value;
-      final button = find.text('添加宽版');
+      final button = find.text('添加 4×2');
       await tester.ensureVisible(button);
       calls.clear();
       await tester.tap(button);
       await tester.pumpAndSettle();
       expect(calls, ['sync', 'requestPin', 'status']);
       expect(styles, ['wide']);
-      expect(find.textContaining('已向桌面请求添加宽版'), findsOneWidget);
+      expect(find.textContaining('已向桌面请求添加 4×2'), findsOneWidget);
       expect(repository.value, same(original));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
@@ -99,7 +99,7 @@ void main() {
   ) async {
     pinResult = false;
     await openSettings(tester);
-    await tester.tap(find.text('添加到桌面'));
+    await tester.tap(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     expect(find.textContaining('当前桌面不支持直接添加'), findsOneWidget);
     final guide = find.text('找不到课间？查看手动添加步骤');
@@ -117,18 +117,18 @@ void main() {
     pinResult = PlatformException(code: 'WIDGET_PIN');
     final repository = await openSettings(tester);
     final original = repository.value;
-    await tester.tap(find.text('添加到桌面'));
+    await tester.tap(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     expect(find.textContaining('暂时无法请求添加'), findsOneWidget);
     expect(identical(repository.value, original), isTrue);
     expect(
       tester
-          .widget<FilledButton>(find.widgetWithText(FilledButton, '添加到桌面'))
+          .widget<FilledButton>(find.widgetWithText(FilledButton, '添加 2×2'))
           .onPressed,
       isNotNull,
     );
     pinResult = true;
-    await tester.tap(find.text('添加到桌面'));
+    await tester.tap(find.text('添加 2×2'));
     await tester.pumpAndSettle();
     expect(find.textContaining('已向桌面请求添加'), findsOneWidget);
     expect(tester.takeException(), isNull);

@@ -1,4 +1,4 @@
 <resources>
-    <string name="widget_description">课间：接下来的两门课，显示时间、教室及停课调课变更。</string>
-    <string name="widget_wide_description">4×2 横向长方形，左右并排显示接下来的两门课、时间与教室。</string>
+    <string name="widget_description">2×2 小方块，上下显示接下来的两门课、时间与教室。</string>
+    <string name="widget_wide_description">4×2 横向双卡，大字课名、上课时间和教室一目了然。</string>
 </resources>

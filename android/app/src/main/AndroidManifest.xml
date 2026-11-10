@@ -4,7 +4,7 @@
         android:label="课间"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <receiver android:name=".ScheduleWidget" android:exported="false" android:label="课间">
+        <receiver android:name=".ScheduleWidget" android:exported="false" android:label="课间 · 2×2">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.intent.action.DATE_CHANGED" />
@@ -15,7 +15,7 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/schedule_widget_info" />
         </receiver>
-        <receiver android:name=".WideScheduleWidget" android:exported="false" android:label="课间 · 宽版">
+        <receiver android:name=".WideScheduleWidget" android:exported="false" android:label="课间 · 4×2">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.intent.action.DATE_CHANGED" />

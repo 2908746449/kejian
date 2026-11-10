@@ -131,7 +131,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() {
         widgetAddMessage = requested
-            ? '已向桌面请求添加${wide ? '宽版' : '原版'}，请在系统弹窗中确认；取消后可再次点击。'
+            ? '已向桌面请求添加 ${wide ? '4×2' : '2×2'}，请在系统弹窗中确认；取消后可再次点击。'
             : '当前桌面不支持直接添加，请按下方步骤手动添加。';
       });
       await refreshWidgetStatus();
