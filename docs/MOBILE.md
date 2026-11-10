@@ -1,6 +1,6 @@
 # Android / iOS 与桌面小组件
 
-版本：0.3.3 开发预览，2026-11-10。
+版本：Android 0.3.4 / iOS 0.3.3 开发预览，2026-11-10。
 
 默认凯里学院作息；Android 和 iOS 均提供「课间 · 2×2」和「课间 · 4×2」两个独立入口，显示接下来的两门课、日期、时间和教室。Android 小方块明确声明 2×2，宽版声明 4×2；两种卡片通过剩余高度分配内容，避免文字集中在顶部、下方大量留空。iOS 小方块保留小、中、大尺寸以兼容已有实例，4×2 入口仅提供横向中尺寸。完整说明见 `TIMETABLE_DEFAULTS.md`。
 
@@ -21,7 +21,12 @@ Android 7.0 / API 24 及以上，交付的 APK 为 arm64（多数现代 Android 
 ```sh
 flutter pub get
 flutter build apk --release --target-platform android-arm64
+python3 tool/check_android_apk.py build/app/outputs/flutter-apk/app-release.apk --build-tools "$ANDROID_HOME/build-tools/36.0.0"
 ```
+
+0.3.4 调整 Android 安装包兼容性：按 Flutter 目标架构同步筛选所有原生依赖，使用可由安装器解压的原生库打包方式，并同时生成 v1 / v2 / v3 签名。发布 arm64 APK 约 30.8 MB，版本号 7，保留原包名和开发证书，可覆盖已发布旧版。Android 14 系统安装器的文件安装、覆盖更新和启动已实测；尚未在澎湃 OS 真机复现或确认原解析错误的根因。
+
+手机安装时，先将 APK 完整下载到「下载」目录，再用系统文件管理器打开。若直接下载的 APK 仍报解析错误，可下载同版本的 APK ZIP，解压后安装其中的 APK；ZIP 内的 APK 与单独下载的文件一致。无需卸载旧版或清空课表。下载文件大小、SHA-256 和证书见同版本校验报告；iOS 继续使用 0.3.3 IPA。
 
 当前 release 仍使用开发用 debug 密钥签名，仅作为可安装预览。正式发布需选择自己的包标识并配置发行签名；签名变更后不能直接覆盖安装开发签名版本，迁移前先导出备份。
 

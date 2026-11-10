@@ -27,6 +27,39 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Keep plugin libraries on the same ABIs as the Flutter engine and AOT app.
+        // Otherwise --target-platform android-arm64 also advertises incomplete
+        // armeabi-v7a/x86_64 payloads contributed by native dependencies.
+        val flutterAbis = mapOf(
+            "android-arm" to "armeabi-v7a",
+            "android-arm64" to "arm64-v8a",
+            "android-x64" to "x86_64",
+        )
+        if (providers.gradleProperty("split-per-abi").orNull != "true") {
+            val targetPlatforms = providers.gradleProperty("target-platform").orNull
+                ?.split(",") ?: flutterAbis.keys.toList()
+            ndk {
+                abiFilters.clear()
+                abiFilters.addAll(targetPlatforms.map { platform ->
+                    requireNotNull(flutterAbis[platform]) { "Unsupported Flutter platform: $platform" }
+                })
+            }
+        }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Publish a JAR signature as well as the modern APK signatures for
+            // installers that inspect the archive before delegating to Android.
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+
+    packaging {
+        jniLibs.useLegacyPackaging = true
     }
 
     buildTypes {

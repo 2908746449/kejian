@@ -2,7 +2,7 @@
 
 一个留白多一点的开源大学课程表。手机优先，免登录，课表由你掌握。
 
-当前版本：**0.3.3 开发预览**。默认采用凯里学院作息，Android / iOS 均提供 2×2 与 4×2 两个独立桌面小组件，都显示接下来的两门课。Flutter 3.47.9 / Dart 3.13.7；iOS App 与 WidgetKit 最低版本为 15.0，已有 TrollStore 的设备可安装真机 IPA。各版本的构建和设备验证状态见 `docs/VERIFICATION.md`。
+当前版本：**Android 0.3.4 / iOS 0.3.3 开发预览**。Android 0.3.4 提供约 30.8 MB 的 arm64 兼容安装包，针对部分安装器的解析问题调整打包方式。默认采用凯里学院作息，Android / iOS 均提供 2×2 与 4×2 两个独立桌面小组件，都显示接下来的两门课。Flutter 3.47.9 / Dart 3.13.7；iOS App 与 WidgetKit 最低版本为 15.0，已有 TrollStore 的设备可安装真机 IPA。各版本的构建和设备验证状态见 `docs/VERIFICATION.md`。
 
 [下载 Android / iOS 安装包](https://github.com/2908746449/kejian/releases) · [报告问题](https://github.com/2908746449/kejian/issues)
 
@@ -39,6 +39,7 @@ Android 开发需要 JDK 17、Android SDK 36、NDK 28.2.13676358；SDK/Gradle �
 ```sh
 flutter run -d <device-id>
 flutter build apk --release --target-platform android-arm64
+python3 tool/check_android_apk.py build/app/outputs/flutter-apk/app-release.apk --build-tools "$ANDROID_HOME/build-tools/36.0.0"
 ```
 
 Android 当前使用开发包标识 `dev.kejian.kejian`。正式发布前需确定包名、配置自己的签名，不能将模板内的 debug 签名配置用作正式发行方案。
