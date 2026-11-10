@@ -5,8 +5,16 @@
 ## v0.3.3 2×2 恢复与双卡排版
 
 - 修正 Android 原版误标 4×2 的尺寸配置：`ScheduleWidget` 恢复 2×2、备用最小宽高 110×110dp，并独立命名「课间 · 2×2」；`WideScheduleWidget` 保留 4×2。两个 provider/kind 均延续原身份。
-- 两端使用不同底色的双课卡片，Android 与 SwiftUI 课程卡根据剩余高度分配区域；4×2 日期独立显示，放大课名，时间和教室排列到底部。Android 4×2 在较矮宿主切换紧凑布局。
-- Flutter 静态分析和 45 项测试通过，按钮断言与请求仍覆盖两个独立样式；iOS 工程、Swift 语法和 15 项 Foundation 数据/时间线检查通过。原生实际构建与桌面检查结果在完成后记录。
+- 两端使用不同底色的双课卡片，Android 与 SwiftUI 课程卡根据剩余高度分配区域；4×2 日期独立显示，放大课名，时间和教室排列到底部。Android 两种尺寸均在较矮宿主切换紧凑布局，避免 2×2 的教室文字被截断。
+- Flutter 静态分析和 45 项测试通过，按钮断言与请求仍覆盖两个独立样式；iOS 工程、Swift 语法和 15 项 Foundation 数据/时间线检查通过。[初始改版的 Check 流程](https://github.com/2908746449/kejian/actions/runs/42729194528) 也已通过。
+- 最终 Android 原生代码为 `cf0f72078ee561fbc7221169ae30a106120afe47`，在本地完成 Release arm64 构建。APK 为 0.3.3 / 6，minSdk 24 / targetSdk 36；`apksigner verify` 通过，沿用原开发证书（SHA-256 `7bc3ca8e1f29478f9852ec5c8cb34d9aef9f197795b1fb8a790c38599bb03c2a`）。APK SHA-256 为 `febd5ea0f4a266d68c8262f77442069c2af97a25d5eefc1a9b3f805856c1af4c`。
+- 在 Android 13 / API 33 专用模拟器覆盖安装后，分别通过设置按钮添加新实例。系统确认面板明确显示「2 × 2」与「4 × 2」，两种实例同时出现在桌面；2×2 上下显示两门课，4×2 左右显示，课名、时间、教室均可见。保留原 provider 后，旧实例继续更新；桌面保留旧占格时需移除该实例再添加。
+- 实际查看 1080×2340、1080×1920 与 1080×1680 的桌面排版；最矮配置使用紧凑卡片，修正后两种尺寸的教室均未截断。测试后已恢复模拟器原分辨率。4×2 按竖屏最大高度选择布局，避免误用横屏高度导致字体过小；正常布局课名最高 22sp、时间 16sp。
+- 检查时两个 provider 均注册且绑定实例，下一次 `WIDGET_REFRESH` Alarm 已安排；AndroidRuntime、AppWidgetHostView 与 RemoteViews 错误日志为空。这些检查不代表已完成不同厂商桌面或长期后台验证。
+- Web Release 构建成功。Android 原生尺寸细化后的 [Check 流程](https://github.com/2908746449/kejian/actions/runs/42731274131) 通过；随后文档提交不改变安装包源码。
+- [iPhoneOS Release 构建与 IPA 打包任务](https://github.com/2908746449/kejian/actions/runs/42729194831) 通过，应用源码为 `b18dacc1defd7419d574d715380e1db313437884`。后续仅修改 Android 排版和文档，iOS 与 Flutter 源码未改变，无需重编译 IPA。
+- 下载 IPA 后独立核对版本 0.3.3 / 6、最低 iOS 15.0、Payload 结构、两个 WidgetKit kind、App/扩展共享组权限，以及全部 7 个 arm64 iPhoneOS Mach-O；重新计算代码页和权限哈希，逐项与报告比对通过。IPA SHA-256 为 `d4776725e894c7ab4590d7460325aa4f557087c8824e617b13a3a5c1f2369ee8`。
+- APK / IPA 的压缩条目与内容均检查无私人课表测试资料，集成测试插件未进入 Android 发布包。本轮未连接小米 14 Pro 或 iPhone 真机，iOS 15.6.1 安装、共享组读写及 WidgetKit 实际布局仍待设备验收。
 
 ## v0.3.2 凯里学院作息与原版/宽版双课小组件
 
