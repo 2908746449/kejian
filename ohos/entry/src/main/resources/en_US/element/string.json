@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "Kejian"
+    },
+    {
+      "name": "module_desc",
+      "value": "Offline personal timetable"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "View and manage your courses"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Kejian"
+    },
+    {
+      "name": "form_compact_name",
+      "value": "Kejian · Compact"
+    },
+    {
+      "name": "form_wide_name",
+      "value": "Kejian · Wide"
+    },
+    {
+      "name": "form_description",
+      "value": "Your next two classes"
+    }
+  ]
+}

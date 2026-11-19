@@ -7,6 +7,8 @@ lib/
   domain/agenda.dart       今日剩余课程与明天预览
   domain/widget_snapshot.dart  完整学期的小组件快照
   platform/widget_bridge.dart  原生共享数据通道
+  platform/file_access.dart    原生文件选择与导出接口
+  platform/runtime_platform.dart  上游/社区 Flutter 平台判断
   data/demo.dart           带明确标记的示例课表
   data/defaults.dart       凯里学院作息预设与旧默认作息迁移
   data/importer.dart       CSV 解析与导入规则
@@ -14,7 +16,7 @@ lib/
   data/timetable_recognition.dart  坐标表格解析、周次与课程合并
   data/table_grid.dart     格线检测与去线
   platform/ocr*.dart       原生通道 / Web Tesseract bridge
-  data/repository.dart     SQLite / Web 存储接口
+  data/repository.dart     SQLite / HarmonyOS 文件 / Web 存储接口
   ui/                     课表、课程编辑、详情、调课、设置
   main.dart               应用状态与操作协调
 ```
@@ -31,11 +33,11 @@ lib/
 
 ## 存储
 
-Android / iOS：`kejian.db`，SQLite `documents(id INTEGER PRIMARY KEY, payload TEXT NOT NULL)`，一个当前学期对应一个经过校验的 JSON 文档。事务内整体替换，用持久化完成后更新 UI 的顺序避免假成功。对于单用户单学期，这比提前建立关系查询层更简单；仓储接口允许日后迁移为关系表。
+Android / iOS：`kejian.db`，SQLite `documents(id INTEGER PRIMARY KEY, payload TEXT NOT NULL)`，一个当前学期对应一个经过校验的 JSON 文档。事务内整体替换，用持久化完成后更新 UI 的顺序避免假成功。HarmonyOS 5+：通过 ArkTS MethodChannel 将同一份 JSON 文档写入应用私有文件；服务卡片快照也作为只读 JSON 文件供 FormExtensionAbility 使用。
 
 Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理站点数据会删除课表，不能代替导出备份；当前不提供跨标签页冲突合并，也不把 Web 构建声明为离线 PWA。
 
-文件选择与保存由 `file_picker` 调用系统 UI。CSV / JSON 导入最多 2 MB，PDF / 图片最多 20 MB，PDF 最多 5 页；CSV 最多 1000 条安排；一学期最多 300 门课程、每课 30 组安排。所有导入先完整解析、校验、预览，再一次写入。无法读取现有数据时保留原文档并显示错误，不用示例覆盖。
+Android / iOS / Web 文件选择与保存由 `file_picker` 调用系统 UI；HarmonyOS 使用 ArkTS DocumentViewPicker。CSV / JSON 导入最多 2 MB，PDF / 图片最多 20 MB，PDF 最多 5 页；CSV 最多 1000 条安排；一学期最多 300 门课程、每课 30 组安排。所有导入先完整解析、校验、预览，再一次写入。无法读取现有数据时保留原文档并显示错误，不用示例覆盖。
 
 ## 备份版本 1
 
@@ -60,13 +62,13 @@ Web 预览：`SharedPreferencesAsync` 对应的浏览器存储。浏览器清理
 
 ## 小组件
 
-App 成功保存主文档后，把规则引擎展开的完整学期快照传给原生端。Android SharedPreferences 与 iOS App Group 原子文件作为只读副本；小组件自行按当前本地时间筛选接下来的两门课。同步失败单独提示，不回滚已保存主文档。刷新、时间线与部署设置见 `MOBILE.md`。
+App 成功保存主文档后，把规则引擎展开的完整学期快照传给原生端。Android SharedPreferences、iOS App Group 原子文件和 HarmonyOS 应用私有文件作为只读副本；小组件/服务卡片自行按当前本地时间筛选接下来的两门课。同步失败单独提示，不回滚已保存主文档。Android/iOS 配置见 `MOBILE.md`，HarmonyOS 见 `HARMONYOS.md`。
 
 0.3.2 起，小组件展示完整快照中按开始时间排序、结束时间晚于当前时刻的前两门课；可跨日期顺延。共享快照结构保持版本 1，原生展示只取两个条目，时间线仍覆盖完整学期。Android 的原版/宽版两个 provider 共用快照和刷新调度，删除一种的最后一个实例不会停止另一种刷新；iOS 的两个 kind 通过 WidgetBundle 注册，并由主 App 同时请求刷新。旧 provider/kind 保留，已有桌面实例可继续更新。
 
 ## PDF 与图片
 
-PDFium 优先提取 PDF 文字与字符矩形；没有可用课表文字层时，页面渲染到最长边 3200 像素并进入图片识别。图片先去除长格线、保留行边界，Android 调用 bundled ML Kit 中文 OCR，iOS 调用 Vision，Web 调用随站点打包的 Tesseract.js / WASM / 中文模型。原始文件不上传，OCR 坐标统一转换为左上角原点。
+PDFium 优先提取 PDF 文字与字符矩形；没有可用课表文字层时，页面渲染到最长边 3200 像素并进入图片识别。图片先去除长格线、保留行边界，Android 调用 bundled ML Kit 中文 OCR，iOS 调用 Vision，HarmonyOS 调用 CoreVisionKit，Web 调用随站点打包的 Tesseract.js / WASM / 中文模型。原始文件不上传，OCR 坐标统一转换为左上角原点。HarmonyOS 在独立构建目录覆盖四个 PDF 包，使用固定提交的社区适配分支和校验过哈希的 arm64 PDFium 库；缓存目录由 ArkTS 返回。共享 Dart 测试通过不等于该原生库或 OCR 已在鸿蒙设备验收。
 
 空间解析器以星期表头确定列、节次标签确定行，读取斜杠分隔的课程信息；明确节次覆盖所在行默认节次，同名同教师的不同安排合并。缺节次只有在至少两行真实标签支持一致规律时才按格线推算；OCR 唯一合法的数字范围补全会保留原文并提示。未知布局、错误周次和未排时间分别进入待核对原文或待安排课程，避免静默丢弃。
 

@@ -2,7 +2,7 @@
 
 一个留白多一点的开源大学课程表。手机优先，免登录，课表由你掌握。
 
-当前版本：**Android 0.3.4 / iOS 0.3.3 开发预览**。Android 0.3.4 提供约 30.8 MB 的 arm64 兼容安装包，针对部分安装器的解析问题调整打包方式。默认采用凯里学院作息，Android / iOS 均提供 2×2 与 4×2 两个独立桌面小组件，都显示接下来的两门课。Flutter 3.47.9 / Dart 3.13.7；iOS App 与 WidgetKit 最低版本为 15.0，已有 TrollStore 的设备可安装真机 IPA。各版本的构建和设备验证状态见 `docs/VERIFICATION.md`。
+当前版本：**Android 0.3.4 / iOS 0.3.3 开发预览；HarmonyOS 5+ 适配中**。Android 0.3.4 提供约 30.8 MB 的 arm64 兼容安装包。默认采用凯里学院作息，Android / iOS 均提供桌面小组件；鸿蒙工程提供 2×2 和 2×4 服务卡片，待 DevEco 编译与真机验收。Flutter 3.47.9 / Dart 3.13.7；iOS App 与 WidgetKit 最低版本为 15.0。各平台的构建和设备验证状态见 `docs/VERIFICATION.md`。
 
 [下载 Android / iOS 安装包](https://github.com/2908746449/kejian/releases) · [报告问题](https://github.com/2908746449/kejian/issues)
 
@@ -21,6 +21,7 @@
 - UTF-8 CSV 模板导入，支持预览、追加或替换。
 - JSON 完整备份和恢复，包含课程、作息、设置和单次变更。
 - Android / iOS 使用 SQLite；浏览器预览使用本地站点存储。
+- HarmonyOS 5+ 原生工程适配：Flutter OHOS 3.47.9、系统文字识别、JSON 本地课表和 2×2 / 2×4 服务卡片；HAP 尚未在 DevEco 或设备上构建验收。
 - 明确标记的示例课表，可一键清空示例后开始建立个人课表。
 
 目前只管理一份当前学期。提醒、教务自动导入、账号同步、深色模式尚未实现。Web 是评审与体验入口，当前不承诺离线启动能力。原生正式发布需要签名和真机验证。
@@ -45,6 +46,8 @@ python3 tool/check_android_apk.py build/app/outputs/flutter-apk/app-release.apk 
 Android 当前使用开发包标识 `dev.kejian.kejian`。正式发布前需确定包名、配置自己的签名，不能将模板内的 debug 签名配置用作正式发行方案。
 
 iOS App 与 Widget 扩展均设置最低 iOS 15.0。已有可用 TrollStore 的设备可下载 `kejian-ios-trollstore-v0.3.3.ipa`，包含小、中、大 WidgetKit 扩展与共享 App Group。iOS 15.6.1 在支持范围内；安装后先启动主 App，再添加桌面小组件。常规 Apple 签名分发仍需完整 Xcode、开发团队和注册的 App Group。配置、构建和添加小组件的方法见 [移动端与小组件说明](docs/MOBILE.md)。
+
+鸿蒙工程与能力边界见 [HarmonyOS 5+ 适配说明](docs/HARMONYOS.md)。鸿蒙使用独立构建目录接入固定提交的 PDF 适配分支，不改变 Android / iOS 的依赖锁定。鸿蒙 HAP 未构建、未签名，PDF / 图片识别与服务卡片仍待真机验收。
 
 中国大陆网络可按需使用 Flutter 官方文档列出的镜像环境：
 
@@ -71,7 +74,13 @@ flutter analyze
 flutter test
 ```
 
-45 项 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败、原版/宽版独立添加请求、默认作息迁移与预设取消/保存。原生共享数据与时间线另有 15 项 Swift Foundation 检查，包括两门课排序、跨日期接续和结束边界；它们不能替代 iOS UI 编译与设备验证。
+45 项通用 Flutter 测试覆盖课程规则、导入、布局、保存和恢复，以及剩余课程递减/明天预览、空格周次、小组件快照与同步失败、原版/宽版独立添加请求、默认作息迁移与预设取消/保存。新增 8 项鸿蒙通道与界面测试在 Flutter OHOS 工具链执行（共 53 项）；上游 Flutter 因无 OHOS 枚举跳过这 8 项。另可用 Node 22.18+ 运行 11 项鸿蒙卡片逻辑/配置检查：
+
+```sh
+node tool/check_harmonyos.mjs
+```
+
+原生共享数据与时间线另有 15 项 Swift Foundation 检查，包括两门课排序、跨日期接续和结束边界；这些检查不能替代原生 UI 编译与设备验证。
 
 示例文件在 `examples/`；可运行 `dart run tool/generate_examples.dart` 重新生成。当前示例固定采用 2026 年秋季学期，仅用于演示和测试。
 
@@ -80,6 +89,7 @@ flutter test
 - [产品范围与后续路线](docs/PRODUCT.md)
 - [PDF / 图片识别导入](docs/IMPORT.md)
 - [Android / iOS 15 与小组件](docs/MOBILE.md)
+- [HarmonyOS 5+ 适配说明](docs/HARMONYOS.md)
 - [凯里学院作息、升级与两门课小组件](docs/TIMETABLE_DEFAULTS.md)
 - [架构、规则与备份格式](docs/ARCHITECTURE.md)
 - [测试和平台验证记录](docs/VERIFICATION.md)

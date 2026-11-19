@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.1.0",
+  "name": "kejian",
+  "version": "1.0.0",
+  "description": "课间 · HarmonyOS NEXT 课程表",
+  "main": "",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}

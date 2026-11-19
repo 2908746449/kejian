@@ -4,8 +4,10 @@ import 'dart:ui' as ui;
 
 import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 import '../platform/ocr.dart';
+import '../platform/runtime_platform.dart';
 import 'timetable_recognition.dart';
 import 'table_grid.dart';
 
@@ -20,6 +22,11 @@ Future<RecognitionResult> recognizeTimetableDocument(
   final pages = <RecognizedPage>[];
   try {
     if (name.toLowerCase().endsWith('.pdf')) {
+      if (isHarmonyOS) {
+        Pdfrx.cacheDirectoryPath ??= await const MethodChannel(
+          'dev.kejian/storage',
+        ).invokeMethod<String>('cacheDirectory');
+      }
       onProgress?.call('正在读取 PDF…');
       await pdfrxFlutterInitialize();
       final doc = await PdfDocument.openData(

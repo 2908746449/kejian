@@ -17,3 +17,7 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --no-web-resources-cdn
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node tool/check_harmonyos.mjs

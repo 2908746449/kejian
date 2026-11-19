@@ -1,6 +1,6 @@
 # 参考与第三方素材
 
-核对日期：2026-11-09。
+核对日期：2026-11-09；鸿蒙适配来源补充核对：2026-11-19。
 
 ## 功能与结构参考
 
@@ -37,3 +37,11 @@ Noto Sans SC 来自 [Google Fonts](https://github.com/google/fonts/tree/main/ofl
 - [Apple Vision](https://developer.apple.com/documentation/vision/vnrecognizetextrequest)：使用 iOS 系统中文/英文文字识别与字符包围框，未引入需要更高最低 iOS 的第三方 OCR 插件。App 与扩展已通过云端完整 Xcode 模拟器编译，识别运行仍需真机验证。
 
 参考的是「本地引擎提取文字和坐标 → 表格解析 → 人工核对」的处理流程。课表布局解析器、格线预处理、课程合并和核对页为本项目实现，没有复制其他课程表项目的识别代码。更多分发信息见 `THIRD_PARTY_NOTICES.md`。
+
+## HarmonyOS NEXT
+
+- [CPF-Flutter/flutter_flutter](https://gitcode.com/CPF-Flutter/flutter_flutter)：社区 Flutter OHOS SDK，分支 `oh-3.47.9-dev`、提交 `5455dafab5da2b2168671bf8a8bc19d015c7c6e6`。本项目用其生成 OHOS host 并检查 Dart 代码；不是 Flutter 上游官方平台支持。
+- [oh-flutter/pdfrx](https://gitcode.com/oh-flutter/pdfrx)：OHOS PDF 适配，固定提交 `99b3c7e37639a21c61b131950c94472fd4410945`。采用其四个 PDF 包及 arm64 PDFium 库，准备脚本仅在独立构建目录覆盖依赖，保留原许可证；原生库 SHA-256 记录于脚本和构建来源清单。该分支的设备测试声明不视为本项目的设备验证。
+- [OpenHarmony API 12 文件接口](https://github.com/openharmony/interface_sdk-js/blob/OpenHarmony-5.0.0-Release/api/@ohos.file.fs.d.ts) 和 [文档选择器](https://github.com/openharmony/interface_sdk-js/blob/OpenHarmony-5.0.0-Release/api/@ohos.file.picker.d.ts)：核对文件描述符、ArrayBuffer 读写、选择/保存选项。
+- [ArkTS 卡片配置](https://github.com/openharmony/docs/blob/OpenHarmony-5.0.0-Release/en/application-dev/form/arkts-ui-widget-configuration.md) 与 [postCardAction](https://github.com/openharmony/docs/blob/OpenHarmony-5.0.0-Release/en/application-dev/reference/apis-arkui/js-apis-postCardAction.md)：核对 2×4 表示两行四列、仅一个默认卡片、30 分钟刷新单位及点击打开 UIAbility。
+- [CoreVisionKit 文字识别 API](https://developer.huawei.com/consumer/cn/doc/doccenter-references/api/core-vision-text-recognition-api)：核对 API 12 的初始化、RGBA_8888 PixelMap、word.cornerPoints 和资源释放。它是鸿蒙系统能力，不标注为开源 OCR 引擎。

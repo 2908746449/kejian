@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../domain/models.dart';
 import '../domain/widget_snapshot.dart';
+import 'runtime_platform.dart' as platform;
 
 export '../domain/widget_snapshot.dart' show widgetSnapshot;
 
@@ -22,10 +23,12 @@ class WidgetBridge {
   static const channel = MethodChannel('dev.kejian/widgets');
   static bool get isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  static bool get isHarmonyOS => platform.isHarmonyOS;
   static bool get supported =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
-          defaultTargetPlatform == TargetPlatform.iOS);
+          defaultTargetPlatform == TargetPlatform.iOS ||
+          isHarmonyOS);
 
   static Future<void> sync(ScheduleData data) async {
     if (!supported) return;

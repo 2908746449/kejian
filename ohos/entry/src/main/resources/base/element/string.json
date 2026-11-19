@@ -1,0 +1,32 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "课间"
+    },
+    {
+      "name": "module_desc",
+      "value": "离线个人课程表"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "查看和管理个人课表"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "课间"
+    },
+    {
+      "name": "form_compact_name",
+      "value": "课间 · 小方块"
+    },
+    {
+      "name": "form_wide_name",
+      "value": "课间 · 横向双课"
+    },
+    {
+      "name": "form_description",
+      "value": "查看接下来的两门课"
+    }
+  ]
+}

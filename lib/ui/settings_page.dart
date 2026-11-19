@@ -10,6 +10,7 @@ class SettingsPage extends StatelessWidget {
   final VoidCallback onSemester, onExport, onImport, onClear;
   final ValueChanged<bool> onWeekends;
   final bool supportsWidgets;
+  final bool harmonyWidgets;
   final String? widgetError;
   final VoidCallback? onWidgetSync;
   final bool androidWidgets, addingWidget;
@@ -25,6 +26,7 @@ class SettingsPage extends StatelessWidget {
     required this.onClear,
     required this.onWeekends,
     this.supportsWidgets = false,
+    this.harmonyWidgets = false,
     this.widgetError,
     this.onWidgetSync,
     this.androidWidgets = false,
@@ -80,13 +82,18 @@ class SettingsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '桌面小组件',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              Text(
+                harmonyWidgets ? '桌面服务卡片' : '桌面小组件',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
-                androidWidgets
+                harmonyWidgets
+                    ? '桌面长按空白处 → 服务卡片 → 课间。提供 2×2 方形和 2×4 横向卡片，均显示接下来的两门课。'
+                    : androidWidgets
                     ? '2×2 小方块上下显示两门课，4×2 横向双卡显示更完整。选择下方按钮，再在系统弹窗中确认。'
                     : '在手机桌面长按空白处，打开小组件列表并选择「课间」。\n可选 2×2 或 4×2，均显示接下来的两门课及时间、教室。',
                 style: const TextStyle(color: muted, fontSize: 12, height: 1.8),

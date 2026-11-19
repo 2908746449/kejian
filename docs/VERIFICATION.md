@@ -1,6 +1,17 @@
 # 验证记录
 
-日期：2026-11-10。版本：Android 0.3.4 / iOS 0.3.3 开发预览。
+更新日期：2026-11-19。安装包版本：Android 0.3.4 / iOS 0.3.3 开发预览；鸿蒙为源码适配阶段。
+
+## HarmonyOS 5+ 首轮适配（2026-11-19）
+
+- 新增社区 Flutter OHOS 3.47.9 生成的 `ohos/` 工程；Dart 侧复用课程与快照逻辑，ArkTS 接入 JSON 私有文件存储、系统文档选择器、CoreVisionKit 图片文字识别及 2×2 / 2×4 服务卡片。
+- 本机没有 DevEco Studio、HarmonyOS SDK、Hvigor、ohpm 或 HarmonyOS 设备。当前记录不包含 ArkTS 编译、HAP 构建/签名、安装或服务卡片真机验收。
+- 普通 OHOS host 的依赖准备实际在工具链检查时退出，提示 `No Hmos SDK found. Try setting the HOS_SDK_HOME environment variable.`，未进入 HAP 编译。Dart 检查使用省略 host 的独立副本完成。
+- PDF 使用固定提交 `99b3c7e37639a21c61b131950c94472fd4410945` 的社区 pdfrx 适配，准备脚本在独立构建目录覆盖四个 PDF 包并校验原生 PDFium SHA-256，未修改原移动端依赖锁定。该原生库、PDF 文字层/扫描页和 OCR 仍待鸿蒙设备验收。
+- 独立目录使用 Flutter OHOS `oh-3.47.9-dev` 提交 `5455dafab5da2b2168671bf8a8bc19d015c7c6e6`：`dart analyze lib test integration_test tool` 无问题；`flutter test` 53 项全部通过，包括新增 8 项存储、读取错误保留、损坏文档拒绝、选取/导出取消和字节、OCR 字符框、快照同步与设置页检查。这些系统能力使用模拟通道。
+- `node tool/check_harmonyos.mjs` 的 11 项实际 ArkTS 纯 helper / 配置检查通过：上课中、结束边界、两课排序、跨日/跨月、末节不重复、异常数据与未知版本、调课、示例标记，以及 2×2 / 2×4 两个动态卡片。Node 执行不等于 ArkTS 编译或卡片渲染。
+- 原上游 Flutter 3.47.9：静态分析通过，45 项通用测试通过，8 项 OHOS 专项因平台枚举缺失跳过；Web Release 构建通过。未重新生成 Android APK 或 iOS IPA。
+- 社区 SDK 的普通依赖最初受上游 PDF UI 包未覆盖 OHOS 枚举影响而无法运行界面测试，现通过独立适配依赖解决。临时稀疏 SDK 的 `flutter analyze` 还因缺少 SDK examples 目录退出；改用上述 Dart 分析命令完成应用源码检查。
 
 ## v0.3.4 Android 安装兼容包
 

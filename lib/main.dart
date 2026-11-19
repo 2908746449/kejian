@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:file_picker/file_picker.dart';
 
 import 'data/demo.dart';
 import 'data/defaults.dart';
 import 'data/importer.dart';
+import 'platform/file_access.dart';
 import 'data/document_recognizer.dart';
 import 'data/timetable_recognition.dart';
 import 'data/repository.dart';
@@ -409,7 +408,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
           ? 'kejian-template.csv'
           : 'kejian-backup-${dateKey(widget.clock())}.json';
       final source = template ? '\uFEFF$csvExample' : data!.encode();
-      final result = await FilePicker.saveFile(
+      final result = await saveScheduleFile(
         fileName: name,
         bytes: Uint8List.fromList(utf8.encode(source)),
         mimeType: template ? 'text/csv' : 'application/json',
@@ -425,22 +424,16 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     if (importing) return;
     importing = true;
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.custom,
+      final file = await pickScheduleFile(
         allowedExtensions: backupOnly
             ? ['json']
             : ['json', 'csv', 'pdf', 'png', 'jpg', 'jpeg', 'webp'],
-        dialogTitle: '选择课表文件',
       );
       if (file == null || !mounted) return;
-      final builder = BytesBuilder();
-      await for (final chunk in file.readAsByteStream()) {
-        builder.add(chunk);
-        if (builder.length > 20 * 1024 * 1024) {
-          throw const FormatException('请选择 20 MB 以内的课表文件');
-        }
+      final bytes = file.bytes;
+      if (bytes.length > 20 * 1024 * 1024) {
+        throw const FormatException('请选择 20 MB 以内的课表文件');
       }
-      final bytes = builder.takeBytes();
       final extension = file.name.toLowerCase().split('.').last;
       if (['pdf', 'png', 'jpg', 'jpeg', 'webp'].contains(extension)) {
         await importDocument(bytes, file.name);
@@ -670,6 +663,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
         data: data!,
         supportsWidgets: WidgetBridge.supported,
         androidWidgets: WidgetBridge.isAndroid,
+        harmonyWidgets: WidgetBridge.isHarmonyOS,
         androidWidgetStatus: androidWidgetStatus,
         addingWidget: addingWidget,
         widgetAddMessage: widgetAddMessage,
